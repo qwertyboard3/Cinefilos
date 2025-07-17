@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎞️ Cinefilos Poster Picker</title>
 
-  <!-- PWA Setup -->
   <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -47,15 +46,16 @@
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
       background: #222;
-      padding: 8px;
-      min-width: 200px;
+      padding: 10px;
+      min-width: 180px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .poster img {
-      width: 200px;
-      height: auto;
-      border-radius: 8px;
+      width: 180px;
+      height: 273px;
       object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 0 6px #000;
     }
     .poster:hover {
       transform: scale(1.05);
@@ -64,7 +64,7 @@
     .poster.selected {
       border: 3px solid #4fc3f7;
       box-shadow: 0 0 20px #4fc3f7;
-      transform: scale(1.05);
+      transform: scale(1.15);
       z-index: 2;
     }
     .poster.flip {
@@ -75,7 +75,6 @@
       50% { transform: rotateY(180deg); }
       100% { transform: rotateY(0deg); }
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -83,7 +82,6 @@
     .fade-in {
       animation: fadeIn 0.6s ease forwards;
     }
-
     #randomPick {
       margin: 20px auto;
       padding: 10px 20px;
@@ -145,47 +143,28 @@
   <ul id="history"></ul>
   <button id="clearHistory">🧹 Clear History</button>
 
+  <!-- Sound Effects -->
+  <audio id="soundSpin" src="sounds/spin.wav"></audio>
+  <audio id="soundPick" src="sounds/pick.wav"></audio>
+
   <script>
     const apiKey = "225d3569";
     const gallery = document.getElementById("posterGallery");
     const pickBtn = document.getElementById("randomPick");
     const clearBtn = document.getElementById("clearHistory");
     const historyList = document.getElementById("history");
+    const soundSpin = document.getElementById("soundSpin");
+    const soundPick = document.getElementById("soundPick");
     const posters = [];
 
-       const entries = [
+    const entries = [
       { title: "Memento", imdbID: "tt0209144" },
-      { title: "Up in Smoke", imdbID: "tt0078446" },
-      { title: "The Vindicator", imdbID: "tt0092172" },
       { title: "Alien", imdbID: "tt0078748" },
-      { title: "Rebel Without a Cause", imdbID: "tt0048545" },
-      { title: "Cape Fear", imdbID: "tt0101540" },
-      { title: "The Green Mile", imdbID: "tt0120689" },
-      { title: "Sleepers", imdbID: "tt0117665" },
-      { title: "The Room", imdbID: "tt0368226" },
-      { title: "Knives Out", imdbID: "tt8946378" },
-      { title: "Dante’s Peak", imdbID: "tt0118928" },
-      { title: "The Big Lebowski", imdbID: "tt0118715" },
-      { title: "Reservoir Dogs", imdbID: "tt0105236" },
-      { title: "Hackers", imdbID: "tt0113243" },
-      { title: "The Cable Guy", imdbID: "tt0115798" },
-      { title: "Death Race 2000", imdbID: "tt0072856" },
-      { title: "Big Trouble in Little China", imdbID: "tt0090728" },
-      { title: "It’s a Mad Mad Mad Mad World", imdbID: "tt0057193" },
-      { title: "Cujo", imdbID: "tt0085382" },
-      { title: "Pet Sematary", imdbID: "tt0098084" },
-      { title: "Braveheart", imdbID: "tt0112573" },
-      { title: "The Wizard", imdbID: "tt0098663" },
-      { title: "Cero y van 4", imdbID: "tt0425818" },
-      { title: "Training Day", imdbID: "tt0139654" },
-      { title: "The Butterfly Effect", imdbID: "tt0289879" },
-      { title: "Hard Target", imdbID: "tt0107076" },
+      { title: "Collateral", imdbID: "tt0369339" },
       { title: "Big Fish", imdbID: "tt0319061" },
-      { title: "This Is England", imdbID: "tt0480025" },
       { title: "12 Monkeys", imdbID: "tt0114746" },
-      { title: "Mecánica Nacional", imdbID: "tt0134817" },
-      { title: "Léon: The Professional", imdbID: "tt0110413" },
-      { title: "Collateral", imdbID: "tt0369339" }
+      { title: "Pet Sematary", imdbID: "tt0098084" },
+      { title: "Knives Out", imdbID: "tt8946378" }
     ];
 
     async function fetchPosterAndBuild(movie) {
@@ -210,6 +189,7 @@
     pickBtn.addEventListener("click", async () => {
       if (posters.length === 0) return;
 
+      soundSpin.play();
       posters.forEach(p => p.element.classList.remove('selected'));
 
       let selected;
@@ -223,6 +203,14 @@
 
       selected.element.classList.add('selected');
       selected.element.scrollIntoView({ behavior: "smooth", inline: "center" });
+      soundPick.play();
+// Stop spin sound before starting pick sound
+soundSpin.pause();
+soundSpin.currentTime = 0;
+soundPick.play();
+
+
+
 
       if (!isAlreadyInHistory(selected.title)) {
         const li = document.createElement('li');
