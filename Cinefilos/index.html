@@ -197,20 +197,31 @@
       { title: "Collateral", imdbID: "tt0369339" }
     ];
 
-    async function fetchPosterAndBuild(movie) {
-      const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`);
-      const data = await res.json();
-      if (data.Response === "True") {
-        const posterUrl = data.Poster && data.Poster !== "N/A" ? data.Poster : "fallback.jpg";
-        movie.title = data.Title;
-        movie.runtime = data.Runtime || "–";
-        const div = document.createElement("div");
-        div.className = "poster";
-        div.innerHTML = `<img src="${posterUrl}" alt="${movie.title}" title="${movie.title}" />`;
-        gallery.appendChild(div);
-        posters.push({ element: div, title: movie.title, runtime: movie.runtime, posterUrl });
-      }
+async function fetchPosterAndBuild(movie) {
+  let posterUrl = "";
+
+  if (fallbackPosters[movie.imdbID]) {
+    posterUrl = fallbackPosters[movie.imdbID];
+  } else {
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`);
+    const data = await res.json();
+    if (data.Response === "True") {
+      posterUrl = data.Poster && data.Poster !== "N/A" ? data.Poster : "fallback.jpg";
+      movie.title = data.Title;
+      movie.runtime = data.Runtime || "–";
+    } else {
+      return;
     }
+  }
+
+  const div = document.createElement("div");
+  div.className = "poster";
+  div.innerHTML = `<img src="${posterUrl}" alt="${movie.title}" title="${movie.title}" />`;
+  gallery.appendChild(div);
+
+  posters.push({ element: div, title: movie.title, runtime: movie.runtime || "–", posterUrl });
+}
+
 
     function isAlreadyInHistory(title) {
       return Array.from(historyList.children).some(li => li.textContent.includes(title));
