@@ -4,13 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎞️ Cinefilos Poster Picker</title>
-
-  <link rel="manifest" href="manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="Cinefilos" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-
   <style>
     body {
       background: #111;
@@ -25,9 +18,7 @@
       -ms-overflow-style: none;
       padding: 10px;
       margin-top: 30px;
-    }
-    .gallery-wrapper::-webkit-scrollbar {
-      display: none;
+      perspective: 1000px;
     }
     .gallery {
       display: flex;
@@ -44,8 +35,8 @@
       align-items: center;
       border: 2px solid #333;
       border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
       background: #222;
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
       padding: 10px;
       min-width: 180px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -59,7 +50,7 @@
     }
     .poster:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
     }
     .poster.selected {
       border: 3px solid #4fc3f7;
@@ -75,14 +66,22 @@
       50% { transform: rotateY(180deg); }
       100% { transform: rotateY(0deg); }
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .poster.pulse {
+      animation: pulseSelected 0.6s ease;
+    }
+    @keyframes pulseSelected {
+      0% { transform: scale(1.15); }
+      50% { transform: scale(1.25); }
+      100% { transform: scale(1.15); }
     }
     .fade-in {
       animation: fadeIn 0.6s ease forwards;
     }
-    #randomPick {
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #randomPick, #randomLongPick {
       margin: 20px auto;
       padding: 10px 20px;
       font-size: 18px;
@@ -132,18 +131,15 @@
 </head>
 <body>
   <h1>🎬 Choose a Movie</h1>
-
   <div class="gallery-wrapper">
     <div id="posterGallery" class="gallery"></div>
   </div>
-
   <button id="randomPick">🎲 Pick a Random Movie</button>
-
-  <h2>Pick History</h2>
+  <button id="randomLongPick">🎥 Pick a Long Movie (≥2.5 hrs)</button>
+  <h2>-Pick History-</h2>
   <ul id="history"></ul>
   <button id="clearHistory">🧹 Clear History</button>
 
-  <!-- Sound Effects -->
   <audio id="soundSpin" src="sounds/spin.wav"></audio>
   <audio id="soundPick" src="sounds/pick.wav"></audio>
 
@@ -151,35 +147,20 @@
     const apiKey = "225d3569";
     const gallery = document.getElementById("posterGallery");
     const pickBtn = document.getElementById("randomPick");
+    const longPickBtn = document.getElementById("randomLongPick");
     const clearBtn = document.getElementById("clearHistory");
     const historyList = document.getElementById("history");
     const soundSpin = document.getElementById("soundSpin");
     const soundPick = document.getElementById("soundPick");
     const posters = [];
+    const longMovies = [];
 
-        const fallbackPosters = {
+    const fallbackPosters = {
       tt0134817: "posters/mecanica.jpg",
-      tt0110413: "posters/leon.png",
-      tt0034820: "posters/gaucha.jpg",
-      tt0045230: "posters/thief.jpg",
-      tt0064356: "posters/cow.jpg",
-      tt0123885: "posters/trinquete.jpg",
-      tt0070235: "posters/horse.jpg",
-      tt0075726: "posters/barbara.jpg",
-      tt0089078: "posters/elegido.jpg",
-      tt0113855: "posters/pearl.jpg",
-      tt0896690: "posters/miedo.jpg",
-      tt1910653: "posters/triste.jpg",
-      tt17068914: "posters/borges.jpg",
-      tt1951524: "posters/sanguivorous.jpg",
-      tt6833964: "posters/sonora.jpg",
-      tt13686040: "posters/quarantine.jpg",
-      tt23769666: "posters/1984.jpg",
-      tt19880934: "posters/failure.jpg",
-      tt26675379: "posters/vitoria.jpg",
+      tt0110413: "posters/leon.png"
     };
 
-   const entries = [
+    const entries = [
       { title: "Memento", imdbID: "tt0209144" },
       { title: "Up in Smoke", imdbID: "tt0078446" },
       { title: "The Vindicator", imdbID: "tt0092172" },
@@ -214,92 +195,81 @@
       { title: "Collateral", imdbID: "tt0369339" }
     ];
 
-async function fetchPosterAndBuild(movie) {
-  let posterUrl = "";
+    async function fetchPosterAndBuild(movie) {
+      let posterUrl = "";
+      let runtimeStr = "–";
 
-  if (fallbackPosters[movie.imdbID]) {
-    posterUrl = fallbackPosters[movie.imdbID];
-  } else {
-    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`);
-    const data = await res.json();
-    if (data.Response === "True") {
-      posterUrl = data.Poster && data.Poster !== "N/A" ? data.Poster : "fallback.jpg";
-      movie.title = data.Title;
-      movie.runtime = data.Runtime || "–";
-    } else {
-      return;
+      if (fallbackPosters[movie.imdbID]) {
+        posterUrl = fallbackPosters[movie.imdbID];
+      } else {
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`);
+        const data = await res.json();
+        if (data.Response === "True") {
+          posterUrl = data.Poster && data.Poster !== "N/A" ? data.Poster : "posters/fallback.jpg";
+          movie.title = data.Title;
+          runtimeStr = data.Runtime || "–";
+        } else {
+          posterUrl = "posters/fallback.jpg";
+        }
+      }
+
+      const div = document.createElement("div");
+      div.className = "poster";
+      div.innerHTML = `<img src="${posterUrl}" alt="${movie.title}" title="${movie.title}" />`;
+      gallery.appendChild(div);
+
+      const info = { element: div, title: movie.title, runtime: runtimeStr, posterUrl };
+      posters.push(info);
+
+      const runtimeMin = parseInt(runtimeStr);
+      if (!isNaN(runtimeMin) && runtimeMin >= 150) {
+        longMovies.push(info);
+      }
     }
-  }
-
-  const div = document.createElement("div");
-  div.className = "poster";
-  div.innerHTML = `<img src="${posterUrl}" alt="${movie.title}" title="${movie.title}" />`;
-  gallery.appendChild(div);
-
-  posters.push({ element: div, title: movie.title, runtime: movie.runtime || "–", posterUrl });
-}
-
 
     function isAlreadyInHistory(title) {
       return Array.from(historyList.children).some(li => li.textContent.includes(title));
     }
 
-    pickBtn.addEventListener("click", async () => {
-      if (posters.length === 0) return;
+    function animatePick(pool) {
+      if (pool.length === 0) return;
 
       soundSpin.play();
-      posters.forEach(p => p.element.classList.remove('selected'));
+      document.querySelector(".gallery-wrapper").classList.add("shake");
 
-      let selected;
-      for (let i = 0; i < 10; i++) {
-        const index = Math.floor(Math.random() * posters.length);
-        selected = posters[index];
-        selected.element.classList.add('flip');
-        await new Promise(r => setTimeout(r, 100 + i * 30));
-        selected.element.classList.remove('flip');
-      }
+      setTimeout(async () => {
+        document.querySelector(".gallery-wrapper").classList.remove("shake");
+        pool.forEach(p => p.element.classList.remove('selected'));
 
-      selected.element.classList.add('selected');
-      selected.element.scrollIntoView({ behavior: "smooth", inline: "center" });
-      soundPick.play();
-// Stop spin sound before starting pick sound
-soundSpin.pause();
-soundSpin.currentTime = 0;
-soundPick.play();
+        let selected;
+        for (let i = 0; i < 10; i++) {
+          const index = Math.floor(Math.random() * pool.length);
+          selected = pool[index];
+          selected.element.classList.add('flip');
+          await new Promise(r => setTimeout(r, 100 + i * 30));
+          selected.element.classList.remove('flip');
+        }
 
+        selected.element.classList.add('selected', 'pulse');
+        selected.element.scrollIntoView({ behavior: "smooth", inline: "center" });
 
+        soundSpin.pause();
+        soundSpin.currentTime = 0;
+        soundPick.play();
 
+        setTimeout(() => {
+          selected.element.classList.remove('pulse');
+        }, 600);
 
-      if (!isAlreadyInHistory(selected.title)) {
-        const li = document.createElement('li');
-        li.classList.add('fade-in');
-        li.innerHTML = `
-          <div style="font-weight:bold; font-size: 1.2em;">${selected.title}</div>
-          <div style="font-size: 1em; color: #aaa;">${selected.runtime}</div>
-          <img src="${selected.posterUrl}" alt="${selected.title}" />
-        `;
-        historyList.prepend(li);
-      }
-    });
+        if (!isAlreadyInHistory(selected.title)) {
+          const li = document.createElement("li");
+          li.classList.add("fade-in");
+          li.innerHTML = `
+            <div style="font-weight:bold; font-size: 1.2em;">${selected.title}</div>
+            <div style="font-size: 1em; color: #aaa;">${selected.runtime}</div> <img src="${selected.posterUrl}" alt="${selected.title}" /> `; historyList.prepend(li); } }, 600); }
 
-    clearBtn.addEventListener("click", () => {
-      historyList.innerHTML = '';
-    });
+pickBtn.addEventListener("click", () => animatePick(posters)); longPickBtn.addEventListener("click", () => animatePick(longMovies)); clearBtn.addEventListener("click", () => { historyList.innerHTML = ''; });
 
-    function buildGallery() {
-      entries.forEach(movie => fetchPosterAndBuild(movie));
-    }
+function buildGallery() { entries.forEach(movie => fetchPosterAndBuild(movie)); }
 
-    buildGallery();
-  </script>
-
-  <!-- PWA Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(() => {
-        console.log("✅ Service Worker registered");
-      });
-    }
-  </script>
-</body>
-</html>
+buildGallery(); </script> </body> </html>
