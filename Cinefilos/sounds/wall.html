@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎞️ Cinefilos Poster Wall</title>
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h2 {
+      margin-top: 40px;
+      color: #4fc3f7;
+    }
+    .gallery-wrapper {
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      justify-content: center;
+    }
+    .poster {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid #333;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+      background: #222;
+      padding: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .poster img {
+      width: 180px;
+      height: 273px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 0 6px #000;
+    }
+    .poster:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body>
+  <h1>🎬 Cinefilos Poster Wall</h1>
+
+  <div class="gallery-wrapper" id="genre-section"></div>
+  <div class="gallery-wrapper" id="runtime-section"></div>
+
+  <script>
+    const apiKey = "225d3569";
+    const entries = [
+      { title: "Dr. Caligari", imdbID: "tt0097228" },
+      { "title": "Sonora", "imdbID": "tt6833964" },
+  { "title": "Leaving Las Vegas", "imdbID": "tt0113627" },
+  { "title": "The Cremaster Cycle", "imdbID": "tt1992236" },
+  { "title": "To Live", "imdbID": "tt0110081" },
+  { "title": "Safe", "imdbID": "tt0114323" },
+  { "title": "Seven Servants", "imdbID": "tt0117604" },
+  { "title": "Funny Games", "imdbID": "tt0119167" },
+  { "title": "Taste of Cherry", "imdbID": "tt0120265" },
+  { "title": "Mouse Hunt", "imdbID": "tt0119715" },
+  { "title": "The Thin Red Line", "imdbID": "tt0120863" },
+  { "title": "The Big Lebowski", "imdbID": "tt0118715" },
+  { "title": "Being John Malkovich", "imdbID": "tt0120601" },
+  { "title": "Following", "imdbID": "tt0154506" },
+  { "title": "Tuvalu", "imdbID": "tt0162023" },
+  { "title": "Jorge Luis Borges: Una vida de poesía", "imdbID": "tt17068914" },
+  { "title": "Battle Royale", "imdbID": "tt0266308" },
+  { "title": "K-PAX", "imdbID": "tt0272152" },
+  { "title": "Little Otik", "imdbID": "tt0228687" },
+  { "title": "Romeo Must Die", "imdbID": "tt0165929" },
+  { "title": "Timecode", "imdbID": "tt0220100" },
+  { "title": "A Beautiful Mind", "imdbID": "tt0268978" },
+  { "title": "Donnie Darko", "imdbID": "tt0246578" },
+  { "title": "La Ciénaga", "imdbID": "tt0240419" },
+  { "title": "Punch-Drunk Love", "imdbID": "tt0272338" },
+  { "title": "Paycheck", "imdbID": "tt0338337" },
+  { "title": "Primer", "imdbID": "tt0390384" },
+  { "title": "The Death of Mr. Lazarescu", "imdbID": "tt0456149" },
+  { "title": "Destino", "imdbID": "tt0377771" },
+  { "title": "Domino", "imdbID": "tt0365485" },
+  { "title": "Three Times", "imdbID": "tt0459666" },
+  { "title": "Inland Empire", "imdbID": "tt0460829" },
+  { "title": "Songs from the Second Floor", "imdbID": "tt0120263" },
+  { "title": "The Science of Sleep", "imdbID": "tt0354899" },
+  { "title": "Black Swan", "imdbID": "tt0947798" },
+  { "title": "Colin", "imdbID": "tt1278322" },
+  { "title": "Synecdoche, New York", "imdbID": "tt0383028" },
+  { "title": "500 Days of Summer", "imdbID": "tt1022603" },
+  { "title": "Enter the Void", "imdbID": "tt1191111" },
+  { "title": "Beyond the Black Rainbow", "imdbID": "tt1534085" },
+  { "title": "Inception", "imdbID": "tt1375666" },
+  { "title": "Kill Your Idols", "imdbID": "tt1268969" },
+  { "title": "Shutter Island", "imdbID": "tt1130884" },
+  { "title": "Who Killed Captain Alex?", "imdbID": "tt1813757" },
+  { "title": "Drive", "imdbID": "tt0780504" },
+  { "title": "Melancholia", "imdbID": "tt1527186" },
+  { "title": "Midnight in Paris", "imdbID": "tt1605783" },
+  { "title": "The Artist", "imdbID": "tt1655442" },
+  { "title": "The Tree of Life", "imdbID": "tt0478304" },
+  { "title": "Holy Motors", "imdbID": "tt2076220" },
+  { "title": "Under the Skin", "imdbID": "tt1441395" },
+  { "title": "Birdman", "imdbID": "tt2562232" },
+  { "title": "Creed", "imdbID": "tt3076658" },
+  { "title": "Sanguivorous", "imdbID": "tt1951524" },
+  { "title": "Enemy", "imdbID": "tt2316411" },
+  { "title": "Blancanieves", "imdbID": "tt1854513" },
+  { "title": "The Witness", "imdbID": "tt3568002" },
+  { "title": "1917", "imdbID": "tt8579674" },
+  { "title": "Sonora", "imdbID": "tt6833964" },
+  { "title": "Workforce", "imdbID": "tt9451096" },
+  { "title": "Da 5 Bloods", "imdbID": "tt9777644" },
+  { "title": "Friend of the World", "imdbID": "tt6074542" },
+  { "title": "El Castigo", "imdbID": "tt21905940" },
+  { "title": "Life and Death in the Warehouse", "imdbID": "tt17519342" },
+  { "title": "Prey", "imdbID": "tt11866324" },
+  { "title": "Detective Chinatown 1900", "imdbID": "tt34463310" },
+  { "title": "Ne Zha 2", "imdbID": "tt34956443" },
+  { "title": "The Battle at Lake Changjin", "imdbID": "tt13462900" },
+  { "title": "Vitória", "imdbID": "tt26675379" },
+  { "title": "Una noche", "imdbID": "tt2184331" },
+    ];
+
+    const fallbackPosters = {
+      tt0097228: "posters/dr-caligari.jpg",
+      tt6833964: "posters/sonora.jpg"
+    };
+
+    function createGallerySection(title, id) {
+      const wrapper = document.createElement("div");
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const gallery = document.createElement("div");
+      gallery.className = "gallery";
+      gallery.id = id;
+      wrapper.appendChild(heading);
+      wrapper.appendChild(gallery);
+      document.body.appendChild(wrapper);
+      return gallery;
+    }
+
+    const genreGroups = {};
+    const runtimeGroups = {
+      short: createGallerySection("Runtime: Short (< 60 min)", "runtime-short"),
+      feature: createGallerySection("Runtime: Feature (≥ 60 min)", "runtime-feature"),
+      unknown: createGallerySection("Runtime: Unknown", "runtime-unknown")
+    };
+
+    async function fetchPosterAndSort(movie) {
+      let posterUrl = "";
+      let genre = "Unknown";
+      let runtimeCategory = "unknown";
+
+      if (fallbackPosters[movie.imdbID]) {
+        posterUrl = fallbackPosters[movie.imdbID];
+        genre = "Unknown";
+        runtimeCategory = "unknown";
+      } else {
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${movie.imdbID}`);
+        const data = await res.json();
+        if (data.Response === "True") {
+          posterUrl = data.Poster && data.Poster !== "N/A" ? data.Poster : "posters/fallback.jpg";
+          movie.title = data.Title;
+          genre = data.Genre ? data.Genre.split(",")[0].trim() : "Unknown";
+          const runtimeStr = data.Runtime || "";
+          const runtimeMin = parseInt(runtimeStr);
+          runtimeCategory =
+            !isNaN(runtimeMin)
+              ? runtimeMin < 60 ? "short" : "feature"
+              : "unknown";
+        } else {
+          posterUrl = "posters/fallback.jpg";
+        }
+      }
+
+      const div = document.createElement("div");
+      div.className = "poster";
+      div.innerHTML = `<img src="${posterUrl}" alt="${movie.title}" title="${movie.title}" />`;
+
+      // Runtime grouping
+      runtimeGroups[runtimeCategory].appendChild(div);
+
+      // Genre grouping
+      if (!genreGroups[genre]) {
+        genreGroups[genre] = createGallerySection(`Genre: ${genre}`, `genre-${genre.toLowerCase()}`);
+      }
+      genreGroups[genre].appendChild(div.cloneNode(true));
+    }
+
+    function buildGallery() {
+      entries.forEach(movie => fetchPosterAndSort(movie));
+    }
+
+    buildGallery();
+  </script>
+</body>
+</html>
