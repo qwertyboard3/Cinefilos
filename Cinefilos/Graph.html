@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weight Progress Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: #000;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 1.8rem;
+    }
+    .banner {
+      width: 100%;
+      max-width: 900px;
+      height: 180px;
+      background: url('https://images.pexels.com/photos/669580/pexels-photo-669580.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940')
+                  center/cover no-repeat;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .banner::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .banner h2 {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      margin: 0;
+      color: #fff;
+      font-size: 1.5rem;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    select {
+      padding: 0.5rem 1rem;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 1rem;
+    }
+    .chart-container {
+      width: 100%;
+      max-width: 900px;
+      background: #111;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    canvas {
+      width: 100% !important;
+      height: 450px !important;
+    }
+    .loss-display {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weekly Weight Progress</h1>
+  <div class="banner">
+    <h2></h2>
+  </div>
+
+  <div class="controls">
+    <select id="chartType">
+      <option value="line">Line Chart</option>
+      <option value="bar">Bar Chart</option>
+      <option value="radar">Radar Chart</option>
+      <option value="pie">Pie Chart (lbs Lost)</option>
+    </select>
+
+    <select id="participantSelect">
+      <option value="all">All Participants</option>
+    </select>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="weightChart"></canvas>
+  </div>
+
+  <div class="loss-display" id="lossDisplay"></div>
+
+  <script>
+    // Weekly labels
+    const weeks = ["06/02","06/09","06/16","06/23","06/30","07/07","07/14","07/21"];
+
+    // Sorted data by name
+    const participants = {
+      Adriana:   [215.0,213.0,213.0,213.0,213.0,213.0,213.0,214.0],
+      Brian:     [375.4,367.8,367.6,367.6,365.2,365.2,365.2,365.2],
+      Cashi:     [130.0,130.0,128.5,128.5,125.0,123.0,119.4,115.8],
+      Cristina:  [208.5,202.8,203.0,201.5,200.6,199.1,199.1,197.3],
+      Cuko:      [172.4,172.4,173.7,166.9,167.5,164.7,171.3,169.8],
+      Jasmin:    [224.8,222.4,220.8,221.6,221.6,221.6,217.4,215.4],
+      Javier:    [220.5,213.8,211.2,208.3,207.5,217.0,207.0,201.2],
+      Jazmin:    [187.4,187.4,186.0,186.0,186.0,186.0,184.0,185.0],
+      Lupe:      [317.2,310.0,310.0,310.0,310.0,310.0,310.0,310.0],
+      Luis:      [225.5,214.5,218.0,215.1,215.1,215.1,218.0,219.0],
+      Mary:      [188.4,178.2,175.4,181.3,176.4,175.4,176.3,173.0],
+      Mike:      [187.6,181.4,181.2,181.2,181.2,181.2,187.4,187.4],
+      Zita:      [157.6,157.7,160.0,154.5,154.5,156.3,156.9,155.2]
+    };
+
+    // Compute lbs lost per user
+    const weightLossData = {};
+    for (const [name, data] of Object.entries(participants)) {
+      const lost = (data[0] - data[data.length -1]).toFixed(1);
+      weightLossData[name] = parseFloat(lost);
+    }
+
+    // Populate participant dropdown
+    const participantSelect = document.getElementById('participantSelect');
+    Object.keys(participants).forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      participantSelect.appendChild(opt);
+    });
+
+    const chartTypeSelect = document.getElementById('chartType');
+    const ctx = document.getElementById('weightChart').getContext('2d');
+    const lossDisplay = document.getElementById('lossDisplay');
+    let chartInstance;
+
+    function buildDatasets(type, selected) {
+      // Pie chart uses loss data
+      if (type === 'pie') {
+        const labels = Object.keys(weightLossData);
+        const data = labels.map(n => weightLossData[n]);
+        return [{
+          label: 'Total lbs Lost',
+          data: data,
+          backgroundColor: labels.map((_,i) => `hsl(${i*30},70%,50%)`),
+          borderColor: '#000',
+          borderWidth: 1
+        }];
+      }
+
+      // Line/Bar/Radar uses weekly progression
+      const entries = selected === 'all'
+        ? Object.entries(participants)
+        : [[selected, participants[selected]]];
+
+      return entries.map(([name, data], i) => ({
+        label: name,
+        data: data,
+        backgroundColor: type==='bar'
+          ? `hsl(${i*30},70%,50%)`
+          : 'transparent',
+        borderColor: `hsl(${i*30},70%,40%)`,
+        fill: false,
+        tension: 0.3,
+        pointRadius: 4
+      }));
+    }
+
+    function renderChart() {
+      const type = chartTypeSelect.value;
+      const selected = participantSelect.value;
+
+      // Destroy old chart
+      if (chartInstance) chartInstance.destroy();
+
+      // Determine labels
+      const labels = type === 'pie'
+        ? Object.keys(weightLossData)
+        : weeks;
+
+      chartInstance = new Chart(ctx, {
+        type: type,
+        data: {
+          labels: labels,
+          datasets: buildDatasets(type, selected)
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: '#ccc' },
+              position: type==='pie' ? 'right' : 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => (
+                  type==='pie'
+                    ? `${ctx.label}: ${ctx.parsed} lbs`
+                    : `${ctx.dataset.label} – ${ctx.parsed.y} lbs`
+                )
+              }
+            }
+          },
+          scales: type==='pie' ? {} : {
+            x: { ticks: { color: '#ccc' }, title: { display: true, text: 'Week', color: '#ccc' }},
+            y: { ticks: { color: '#ccc' }, title: { display: true, text: 'Weight (lbs)', color: '#ccc' }}
+          }
+        }
+      });
+
+      // Update loss display when NOT pie
+      if (type !== 'pie' && selected !== 'all') {
+        const lost = weightLossData[selected];
+        lossDisplay.textContent = `🗜️ Total lbs lost by ${selected}: ${lost} lbs`;
+      } else {
+        lossDisplay.textContent = '';
+      }
+    }
+
+    chartTypeSelect.addEventListener('change', renderChart);
+    participantSelect.addEventListener('change', renderChart);
+
+    // Initial render
+    renderChart();
+  </script>
+</body>
+</html>
