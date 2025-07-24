@@ -266,31 +266,23 @@ const localFallback = {
     }
 
     // fetch metadata+jposter: use local override first, then OMDB, then fallback
-    async function fetchPoster(id) {
-      let posterUrl = FALLBACK_IMG;
-      let title     = id;
+async function fetchPoster(id) {
+  let posterUrl = FALLBACK_IMG;
+  let title     = id;
 
-      if (localFallback[id]) {
-        // 1️⃣ local override
-        posterUrl = await validateImage(localFallback[id]);
-      } else {
-        // 2️⃣ fetch from OMDB
-        try {
-          const res  = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
-          const data = await res.json();
-          if (data.Response === "True") {
-            title = data.Title;
-            if (data.Poster && data.Poster !== "N/A") {
-              posterUrl = await validateImage(data.Poster);
-            }
-          }
-        } catch {
-          // network/JSON error → posterUrl stays FALLBACK_IMG
-        }
-      }
+  // 1) local override?
+- if (localFallback[id]) {
+-   // (previously fell through to OMDb or left title as the ID)
++ if (localFallback[id]) {
++   posterUrl = await validateImage(localFallback[id].path);
++   title     = localFallback[id].title;
+  }
+  else {
+    // existing OMDb fetch logic…
+  }
 
-      return { id, title, posterUrl };
-    }
+  return { id, title, posterUrl };
+}
 
     function updateCoverflow(addHistory = false) {
       const spacing   = 150;
