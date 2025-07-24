@@ -271,18 +271,28 @@ async function fetchPoster(id) {
   let title     = id;
 
   // 1) local override?
-- if (localFallback[id]) {
--   // (previously fell through to OMDb or left title as the ID)
-+ if (localFallback[id]) {
-+   posterUrl = await validateImage(localFallback[id].path);
-+   title     = localFallback[id].title;
-  }
-  else {
-    // existing OMDb fetch logic…
+  if (localFallback[id]) {
+    posterUrl = await validateImage(localFallback[id].path);
+    title     = localFallback[id].title;
+  } else {
+    // 2) OMDb fetch logic
+    try {
+      const res  = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+      const data = await res.json();
+      if (data.Response === "True") {
+        title = data.Title;
+        if (data.Poster && data.Poster !== "N/A") {
+          posterUrl = await validateImage(data.Poster);
+        }
+      }
+    } catch (e) {
+      // silently ignore network/JSON errors
+    }
   }
 
   return { id, title, posterUrl };
 }
+
 
     function updateCoverflow(addHistory = false) {
       const spacing   = 150;
