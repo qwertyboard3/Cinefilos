@@ -31,7 +31,6 @@
       -webkit-box-reflect: below 8px linear-gradient(transparent, rgba(255,255,255,0.1));
     }
 
-    /* posters start hidden & will animate in */
     .poster {
       position: absolute;
       top: 50%;
@@ -45,7 +44,6 @@
       transition: transform 0.4s ease, opacity 0.4s ease, z-index 0s;
     }
 
-    /* once loaded, fade them in & animate into place */
     .coverflow-container.loaded .poster {
       opacity: 1;
     }
@@ -173,35 +171,48 @@
     let currentIdx    = 0;
     const apiKey      = "225d3569";
 
-    const PLACEHOLDER = "https://via.placeholder.com/180x273?text=No+Image";
+    // final fallback image
+    const FALLBACK_IMG  = "posters/fallback.png";
 
+    // override OMDB poster for this one ID
+    const localFallback = {
+      tt0134817: "posters/mecanica.jpg"
+    };
+
+    // verify that an image URL actually loads (remote or local)
     async function validateImage(url) {
       return new Promise(res => {
         const img = new Image();
         img.onload  = () => res(url);
-        img.onerror = () => res(PLACEHOLDER);
+        img.onerror = () => res(FALLBACK_IMG);
         img.src     = url;
       });
     }
 
+    // fetch metadata+jposter: use local override first, then OMDB, then fallback
     async function fetchPoster(id) {
-      const fallback = {
-        tt0111161: "https://m.media-amazon.com/images/I/81mocWNRmvL._AC_SY679_.jpg",
-        tt0068646: "https://m.media-amazon.com/images/I/71A7T3tbA9L._AC_SY679_.jpg",
-        tt0468569: "https://m.media-amazon.com/images/I/71pDhnHIvLL._AC_SY679_.jpg"
-      };
-      let posterUrl = fallback[id] || PLACEHOLDER;
-      let title = id;
-      try {
-        const r = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
-        const d = await r.json();
-        if (d.Response === "True" && d.Poster && d.Poster !== "N/A") {
-          posterUrl = await validateImage(d.Poster);
-          title     = d.Title;
+      let posterUrl = FALLBACK_IMG;
+      let title     = id;
+
+      if (localFallback[id]) {
+        // 1️⃣ local override
+        posterUrl = await validateImage(localFallback[id]);
+      } else {
+        // 2️⃣ fetch from OMDB
+        try {
+          const res  = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+          const data = await res.json();
+          if (data.Response === "True") {
+            title = data.Title;
+            if (data.Poster && data.Poster !== "N/A") {
+              posterUrl = await validateImage(data.Poster);
+            }
+          }
+        } catch {
+          // network/JSON error → posterUrl stays FALLBACK_IMG
         }
-      } catch {
-        // ignore errors
       }
+
       return { id, title, posterUrl };
     }
 
@@ -229,7 +240,7 @@
           rotateY(${rot}deg)
           scale(${scale})
         `;
-        p.element.style.zIndex = zidx;
+        p.element.style.zIndex          = zidx;
         p.element.classList.toggle("selected", i === currentIdx);
 
         if (addHistory && i === currentIdx) {
@@ -248,7 +259,9 @@
     }
 
     async function init() {
-      const movies = await Promise.all(entries.map(e => fetchPoster(e.imdbID)));
+      const movies = await Promise.all(
+        entries.map(e => fetchPoster(e.imdbID))
+      );
 
       movies.forEach((m, i) => {
         const div = document.createElement("div");
@@ -258,7 +271,8 @@
             <div class="front">
               <img src="${m.posterUrl}" alt="${m.title}">
             </div>
-          </div>`;
+          </div>
+        `;
         flow.appendChild(div);
         posters.push({ ...m, element: div });
 
@@ -270,7 +284,6 @@
 
       currentIdx = Math.floor(posters.length / 2);
 
-      // animate posters into place on load
       setTimeout(() => {
         document.querySelector('.coverflow-container').classList.add('loaded');
         updateCoverflow(false);
@@ -300,3 +313,4 @@
   </script>
 </body>
 </html>
+```
