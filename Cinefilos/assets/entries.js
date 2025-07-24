@@ -1,5 +1,4 @@
    const entries = [
-      { "title": "Vitória", "imdbID": "tt26675379" },
       { title: "Memento", imdbID: "tt0209144" },
       { title: "Up in Smoke", imdbID: "tt0078446" },
       { title: "The Vindicator", imdbID: "tt0092172" },
