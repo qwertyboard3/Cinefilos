@@ -322,7 +322,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/Cinefilos/Cinefilos/assets/sw.js')
+        navigator.serviceWorker.register('assets/sw.js')
           .then(reg => console.log('Service Worker registered:', reg))
           .catch(err => console.error('SW registration failed:', err));
       });
@@ -331,4 +331,4 @@
 </body>
 </html>
 
-12:50
+12:55
