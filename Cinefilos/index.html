@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>cinefilos</title>
- // <base href="Cinefilos/">
+  <base href="/Cinefilos/Cinefilos/">
   <link rel="manifest" href="assets/manifest.json">
   <meta name="theme-color" content="#111111">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,17 +20,20 @@
       padding: 20px;
       overflow-x: hidden;
     }
+
     .header-image {
       max-width: 300px;
       height: auto;
       margin: 10px auto;
       display: block;
     }
+
     .centered-container {
       max-width: 900px;
       width: 100%;
       margin: 0 auto;
     }
+
     .coverflow-container {
       perspective: 1200px;
       height: 350px;
@@ -38,6 +41,7 @@
       overflow-x: hidden;
       -webkit-box-reflect: below 8px linear-gradient(transparent, rgba(255,255,255,0.1));
     }
+
     .poster {
       position: absolute;
       top: 50%;
@@ -50,21 +54,25 @@
       opacity: 0;
       transition: transform 0.4s ease, opacity 0.4s ease, z-index 0s;
     }
+
     .coverflow-container.loaded .poster {
       opacity: 1;
     }
+
     #posterFlow {
       position: relative;
       width: 100%;
       height: 100%;
       transform-style: preserve-3d;
     }
+
     .box {
       width: 100%;
       height: 100%;
       position: relative;
       transform-style: preserve-3d;
     }
+
     .front {
       position: absolute;
       top: 0; left: 0;
@@ -80,12 +88,14 @@
       align-items: center;
       justify-content: center;
     }
+
     .front img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       user-select: none;
     }
+
     .selected .front {
       border-color: #4fc3f7;
       box-shadow:
@@ -93,23 +103,27 @@
         0 0 20px #4fc3f7,
         inset 0 0 8px rgba(255,255,255,0.1);
     }
+
     .button-container {
       display: flex;
       justify-content: center;
       gap: 20px;
       margin-bottom: 20px;
     }
+
     .button-container button {
       background: none;
       border: none;
       cursor: pointer;
       padding: 0;
     }
+
     .button-container img {
       display: block;
       width: 160px;
       height: auto;
     }
+
     #history {
       display: flex;
       flex-wrap: wrap;
@@ -120,6 +134,7 @@
       list-style: none;
       max-width: 800px;
     }
+
     #history li {
       background: #222;
       padding: 10px;
@@ -128,6 +143,7 @@
       box-shadow: 0 0 8px #000;
       min-width: 180px;
     }
+
     #history img {
       max-height: 180px;
       border-radius: 6px;
@@ -136,6 +152,7 @@
   </style>
 </head>
 <body>
+
   <img src="assets/cinefilos.png" alt="Cinefilos" class="header-image">
 
   <div class="centered-container">
@@ -145,7 +162,7 @@
 
     <div class="button-container">
       <button id="randomPick">
-        <img src="Cinefilos/assets/button.png" alt="Random Movie">
+        <img src="assets/button.png" alt="Random Movie">
       </button>
       <button id="clearHistory">
         <img src="assets/button2.png" alt="Clear History">
@@ -154,7 +171,7 @@
   </div>
 
   <ul id="history"></ul>
-  <audio id="soundPick" src="sounds/pick.wav"></audio>
+  <audio id="soundPick" src="assets/sounds/pick.wav"></audio>
 
   <script src="assets/entries.js"></script>
   <script>
@@ -166,8 +183,8 @@
     const posters = [];
     let currentIdx = 0;
     const apiKey = "225d3569";
-    const FALLBACK_IMG = "posters/fallback.jpg";
-    const localFallback = { tt0134817: "posters/mecanica.jpg" };
+    const FALLBACK_IMG = "assets/posters/fallback.jpg";
+    const localFallback = { tt0134817: "assets/posters/mecanica.jpg" };
 
     async function validateImage(url) {
       return new Promise(res => {
@@ -295,15 +312,17 @@
         soundPick.play();
         updateCoverflow(true);
       });
+
       clearBtn.addEventListener("click", () => historyList.innerHTML = "");
     }
 
     init();
   </script>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/Cinefilos/Cinefilos/sw.js')
+        navigator.serviceWorker.register('/Cinefilos/Cinefilos/assets/sw.js')
           .then(reg => console.log('Service Worker registered:', reg))
           .catch(err => console.error('SW registration failed:', err));
       });
