@@ -19,7 +19,6 @@
       { title: "It’s a Mad Mad Mad Mad World", imdbID: "tt0057193" },
       { title: "Cujo", imdbID: "tt0085382" },
       { title: "Pet Sematary", imdbID: "tt0098084" },
-      { title: "Braveheart", imdbID: "tt0112573" },
       { title: "The Wizard", imdbID: "tt0098663" },
       { title: "Cero y van 4", imdbID: "tt0425818" },
       { title: "Training Day", imdbID: "tt0139654" },
