@@ -28,6 +28,5 @@
       { title: "This Is England", imdbID: "tt0480025" },
       { title: "12 Monkeys", imdbID: "tt0114746" },
       { title: "Mecánica Nacional", imdbID: "tt0134817" },
-      { title: "Léon: The Professional", imdbID: "tt0110413" },
       { title: "Collateral", imdbID: "tt0369339" }
     ];
