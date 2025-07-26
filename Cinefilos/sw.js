@@ -1,26 +1,54 @@
+// assets/sw.js
 
-const CACHE_NAME = "cinefilos-cache-v1";
-const ASSETS_TO_CACHE = [
-  "/Cinefilos/Cinefilos/",
-  "/Cinefilos/Cinefilos/index.html",
-  "/Cinefilos/Cinefilos/assets/cinefilos.png",
-  "/Cinefilos/Cinefilos/assets/button.png",
-  "/Cinefilos/Cinefilos/assets/button2.png",
-  "/Cinefilos/Cinefilos/assets/entries.js",
-  "/Cinefilos/Cinefilos/posters/fallback.jpg",
-  "/Cinefilos/Cinefilos/sounds/pick.wav",
-  "/Cinefilos/Cinefilos/assets/icons/icon-192.png",
-  "/Cinefilos/Cinefilos/assets/icons/icon-512.png"
+const CACHE_NAME = 'cinefilos-static-v1';
+const STATIC_ASSETS = [
+  'assets/cinefilos.png',
+  'assets/button.png',
+  'assets/button2.png',
+  'assets/sounds/pick.wav',
+  'assets/manifest.json',
+  // Add anything else you want to cache (only static assets)
 ];
 
-self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
+self.addEventListener('install', event => {
+  self.skipWaiting(); // Activate immediately
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
   );
 });
 
-self.addEventListener("fetch", e => {
-  e.respondWith(
-    caches.match(e.request).then(res => res || fetch(e.request))
+self.addEventListener('activate', event => {
+  // Clear out old caches
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(key => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
+    )
+  );
+  self.clients.claim(); // Take control immediately
+});
+
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Don't cache HTML or index.html — always fetch from network
+  if (req.mode === 'navigate' || req.url.endsWith('index.html')) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
+  // Try cache first for static assets
+  if (STATIC_ASSETS.some(asset => req.url.includes(asset))) {
+    event.respondWith(
+      caches.match(req).then(res => res || fetch(req))
+    );
+    return;
+  }
+
+  // Default: network first, fallback to cache if offline
+  event.respondWith(
+    fetch(req).catch(() => caches.match(req))
   );
 });
