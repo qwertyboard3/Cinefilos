@@ -10,17 +10,304 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Cinéfilos">
   <meta name="apple-touch-icon" href="assets/icons/icon-192.png">
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #eee;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    .header-image {
+      max-width: 300px;
+      height: auto;
+      margin: 10px auto;
+      display: block;
+    }
+    .centered-container {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .coverflow-container {
+      perspective: 1200px;
+      height: 350px;
+      margin: 30px 0 40px;
+      overflow-x: hidden;
+      -webkit-box-reflect: below 8px linear-gradient(transparent, rgba(255,255,255,0.1));
+    }
+    .poster {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 150px;
+      height: 225px;
+      transform-origin: center center;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease, z-index 0s;
+    }
+    .coverflow-container.loaded .poster {
+      opacity: 1;
+    }
+    #posterFlow {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+    .box {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+    .front {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.02);
+      border: 2px solid rgba(255,255,255,0.3);
+      overflow: hidden;
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.6),
+        inset 0 0 8px rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      user-select: none;
+    }
+    .selected .front {
+      border-color: #4fc3f7;
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.6),
+        0 0 20px #4fc3f7,
+        inset 0 0 8px rgba(255,255,255,0.1);
+    }
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .button-container button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    .button-container img {
+      display: block;
+      width: 160px;
+      height: auto;
+    }
+    #history {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 10px auto;
+      padding: 0;
+      list-style: none;
+      max-width: 800px;
+    }
+    #history li {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 0 8px #000;
+      min-width: 180px;
+    }
+    #history img {
+      max-height: 180px;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+  </style>
 </head>
 <body>
-<!-- Minimal placeholder for PWA structure. Replace with full content if needed. -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/Cinefilos/Cinefilos/sw.js')
-        .then(reg => console.log('Service Worker registered:', reg))
-        .catch(err => console.error('SW registration failed:', err));
-    });
-  }
-</script>
+  <img src="assets/cinefilos.png" alt="Cinefilos" class="header-image">
+
+  <div class="centered-container">
+    <div class="coverflow-container">
+      <div id="posterFlow"></div>
+    </div>
+
+    <div class="button-container">
+      <button id="randomPick">
+        <img src="assets/button.png" alt="Random Movie">
+      </button>
+      <button id="clearHistory">
+        <img src="assets/button2.png" alt="Clear History">
+      </button>
+    </div>
+  </div>
+
+  <ul id="history"></ul>
+  <audio id="soundPick" src="sounds/pick.wav"></audio>
+
+  <script src="assets/entries.js"></script>
+  <script>
+    const flow = document.getElementById("posterFlow");
+    const pickBtn = document.getElementById("randomPick");
+    const clearBtn = document.getElementById("clearHistory");
+    const historyList = document.getElementById("history");
+    const soundPick = document.getElementById("soundPick");
+    const posters = [];
+    let currentIdx = 0;
+    const apiKey = "225d3569";
+    const FALLBACK_IMG = "posters/fallback.jpg";
+    const localFallback = { tt0134817: "posters/mecanica.jpg" };
+
+    async function validateImage(url) {
+      return new Promise(res => {
+        const img = new Image();
+        img.onload = () => res(url);
+        img.onerror = () => res(FALLBACK_IMG);
+        img.src = url;
+      });
+    }
+
+    async function fetchPoster(id) {
+      let posterUrl = FALLBACK_IMG;
+      let title = id;
+      if (localFallback[id]) {
+        posterUrl = await validateImage(localFallback[id]);
+      } else {
+        try {
+          const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+          const data = await res.json();
+          if (data.Response === "True") {
+            title = data.Title;
+            if (data.Poster && data.Poster !== "N/A") {
+              posterUrl = await validateImage(data.Poster);
+            }
+          }
+        } catch {}
+      }
+      return { id, title, posterUrl };
+    }
+
+    function updateCoverflow(addHistory = false) {
+      const spacing = 150;
+      const maxTilt = 45;
+      const maxZ = 150;
+      const minScale = 0.7;
+      const scaleStep = 0.15;
+
+      posters.forEach((p, i) => {
+        const offset = i - currentIdx;
+        const x = offset * spacing;
+        const rot = -offset * maxTilt;
+        const z = offset === 0 ? maxZ : maxZ * (1 - Math.min(Math.abs(offset), 3) / 3);
+        const scale = Math.max(minScale, 1 - Math.abs(offset) * scaleStep);
+        const zidx = offset === 0 ? 3000 : 1000 - Math.abs(offset);
+
+        p.element.style.transform = `
+          translate(-50%, -50%)
+          translateX(${x}px)
+          translateZ(${z}px)
+          rotateY(${rot}deg)
+          scale(${scale})
+        `;
+        p.element.style.zIndex = zidx;
+        p.element.classList.toggle("selected", i === currentIdx);
+
+        if (addHistory && i === currentIdx) {
+          const exists = [...historyList.children].some(li => li.textContent.includes(p.title));
+          if (!exists) {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              <div style="font-weight:bold;">${p.title}</div>
+              <img src="${p.posterUrl}" alt="${p.title}">
+            `;
+            historyList.prepend(li);
+          }
+        }
+      });
+    }
+
+    async function init() {
+      const movies = await Promise.all(entries.map(e => fetchPoster(e.imdbID)));
+      movies.forEach((m, i) => {
+        const div = document.createElement("div");
+        div.className = "poster";
+        div.innerHTML = `
+          <div class="box">
+            <div class="front">
+              <img src="${m.posterUrl}" alt="${m.title}">
+            </div>
+          </div>
+        `;
+        flow.appendChild(div);
+        posters.push({ ...m, element: div });
+
+        div.addEventListener("click", () => {
+          currentIdx = i;
+          updateCoverflow(false);
+        });
+      });
+
+      currentIdx = Math.floor(posters.length / 2);
+      setTimeout(() => {
+        document.querySelector('.coverflow-container').classList.add('loaded');
+        updateCoverflow(false);
+      }, 100);
+
+      window.addEventListener("keydown", e => {
+        if (e.key === "ArrowLeft" && currentIdx > 0) currentIdx--;
+        if (e.key === "ArrowRight" && currentIdx < posters.length - 1) currentIdx++;
+        updateCoverflow(false);
+      });
+
+      let startX = 0, isDragging = false;
+      flow.addEventListener("touchstart", e => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          startX = e.touches[0].clientX;
+        }
+      });
+      flow.addEventListener("touchmove", e => {
+        if (isDragging) {
+          const deltaX = e.touches[0].clientX - startX;
+          if (Math.abs(deltaX) > 50) {
+            if (deltaX > 0 && currentIdx > 0) currentIdx--;
+            else if (deltaX < 0 && currentIdx < posters.length - 1) currentIdx++;
+            updateCoverflow(false);
+            isDragging = false;
+          }
+        }
+      });
+      flow.addEventListener("touchend", () => isDragging = false);
+
+      pickBtn.addEventListener("click", () => {
+        currentIdx = Math.floor(Math.random() * posters.length);
+        soundPick.play();
+        updateCoverflow(true);
+      });
+      clearBtn.addEventListener("click", () => historyList.innerHTML = "");
+    }
+
+    init();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/Cinefilos/Cinefilos/sw.js')
+          .then(reg => console.log('Service Worker registered:', reg))
+          .catch(err => console.error('SW registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>
