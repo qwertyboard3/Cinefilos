@@ -81,13 +81,11 @@
       width: 100%;
       height: 100%;
       background: #111;
-      border-radius: 3px;
+      border-radius: 12px;
       border: 2px solid #444;
       box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.6),
-        3px 0 10px rgba(0, 0, 0, 0.4),
-        inset -4px 0 6px rgba(0, 0, 0, 0.3),
-        inset 0 0 6px rgba(255, 255, 255, 0.05);
+        0 6px 16px rgba(0, 0, 0, 0.6),
+        inset 0 0 8px rgba(255, 255, 255, 0.05);
       transform-style: preserve-3d;
       display: flex;
       align-items: center;
@@ -95,22 +93,12 @@
       overflow: hidden;
     }
 
-    .front::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 10px;
-      height: 100%;
-      background: linear-gradient(to right, #222 0%, #333 100%);
-      box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.6);
-    }
-
     .front img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       user-select: none;
+      border-radius: 12px;
     }
 
     .selected .front {
@@ -244,7 +232,9 @@
         const x = offset * spacing;
         const rot = -offset * maxTilt;
         const z = offset === 0 ? maxZ : maxZ * (1 - Math.min(Math.abs(offset), 3) / 3);
-        const scale = Math.max(minScale, 1 - Math.abs(offset) * scaleStep);
+        const scale = offset === 0
+          ? 1.1  // Selected poster pops up 10%
+          : Math.max(minScale, 1 - Math.abs(offset) * scaleStep);
         const zidx = offset === 0 ? 3000 : 1000 - Math.abs(offset);
 
         p.element.style.transform = `
