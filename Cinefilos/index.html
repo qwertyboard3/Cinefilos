@@ -58,6 +58,23 @@
       overflow: visible;
     }
 
+.poster-top-title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  text-shadow: 0 0 5px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+.front {
+  position: relative;
+}
+
+
+
     .coverflow-container.loaded .poster {
       opacity: 1;
     }
@@ -68,6 +85,20 @@
       height: 100%;
       transform-style: preserve-3d;
     }
+
+.poster-title {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 0 0 5px rgba(0,0,0,0.7);
+  pointer-events: none;
+}
+
+
 
     /* Flip animation & glow/bounce */
 
@@ -82,7 +113,8 @@
       overflow: hidden;
     }
 
-    .front {
+      .front {
+      position: relative;
       width: 100%;
       height: 100%;
       border-radius: 12px;
@@ -171,6 +203,32 @@
       border-radius: 6px;
       margin-top: 8px;
     }
+
+.pressed {
+  animation: pressEffect 0.1s ease-in-out;
+}
+
+@keyframes pressEffect {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+button:active {
+  transform: scale(0.95);
+  box-shadow: inset 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+button:hover {
+  animation: pulse 0.6s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+
   </style>
 </head>
 <body>
@@ -195,180 +253,228 @@
   <ul id="history"></ul>
   <audio id="soundPick" src="assets/sounds/pick.wav"></audio>
 
-  <script src="assets/entries.js"></script>
-  <script>
-    const flow = document.getElementById("posterFlow");
-    const pickBtn = document.getElementById("randomPick");
-    const clearBtn = document.getElementById("clearHistory");
-    const historyList = document.getElementById("history");
-    const soundPick = document.getElementById("soundPick");
-    const posters = [];
-    let currentIdx = 0;
-    const apiKey = "225d3569";
-    const FALLBACK_IMG = "posters/fallback.jpg";
-    const localFallback = { tt0134817: "posters/mecanica.jpg" };
+<!----------------------------------------------------------------------------------------------------script---------------------------------------------------------------------------------------------------------------------->
 
-    async function validateImage(url) {
-      return new Promise(res => {
-        const img = new Image();
-        img.onload = () => res(url);
-        img.onerror = () => res(FALLBACK_IMG);
-        img.src = url;
-      });
-    }
+<script src="assets/entries.js"></script>
+<script>
+  const flow = document.getElementById("posterFlow");
+  const pickBtn = document.getElementById("randomPick");
+  const clearBtn = document.getElementById("clearHistory");
+  const historyList = document.getElementById("history");
+  const soundPick = document.getElementById("soundPick");
+  const posters = [];
+  let currentIdx = 0;
+  const apiKey = "225d3569";
+  const FALLBACK_IMG = "posters/fallback.jpg";
 
-    async function fetchPoster(id) {
-      let posterUrl = FALLBACK_IMG;
-      let title = id;
-      let runtime = "";
-      if (localFallback[id]) {
-        posterUrl = await validateImage(localFallback[id]);
+  const localFallback = {
+    "tt0134817": "posters/mecanica.jpg",
+    "tt26675379": "posters/vitoria.jpg",
+    "tt0896690": "posters/miedo.jpg",
+  };
+
+  const forcedTitles = {
+    "tt0134817": "La Mecánica del Corazón",
+    "tt26675379": "Vitória"
+  };
+
+  const forcedRuntime = {
+    "tt0134817": "95 min", //mecanica nacional
+    "tt26675379": "112 min" //vitoria
+  };
+
+  async function validateImage(url) {
+    return new Promise(res => {
+      const img = new Image();
+      img.onload = () => res(url);
+      img.onerror = () => res(FALLBACK_IMG);
+      img.src = url;
+    });
+  }
+
+  const fetchPoster = async (id) => {
+    let posterUrl = FALLBACK_IMG;
+    let title = "";
+    let runtime = "";
+
+    try {
+      const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+      const data = await res.json();
+      if (data.Response === "True") {
+        title = forcedTitles[id] || data.Title;
+        runtime = forcedRuntime[id] || data.Runtime || "";
+        posterUrl = await validateImage(localFallback[id] || data.Poster || FALLBACK_IMG);
       } else {
-        try {
-          const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
-          const data = await res.json();
-          if (data.Response === "True") {
-            title = data.Title;
-            runtime = data.Runtime || "";
-            if (data.Poster && data.Poster !== "N/A") {
-              posterUrl = await validateImage(data.Poster);
-            }
-          }
-        } catch {}
+        title = forcedTitles[id] || id;
+        runtime = forcedRuntime[id] || "";
+        posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
       }
-      return { id, title, posterUrl, runtime };
+    } catch {
+      title = forcedTitles[id] || id;
+      runtime = forcedRuntime[id] || "";
+      posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
     }
 
-    function updateCoverflow(addHistory = false) {
-      const spacing = 150;
-      const maxTilt = 45;
-      const maxZ = 150;
-      const minScale = 0.7;
-      const scaleStep = 0.15;
+    return { id, title, posterUrl, runtime };
+  };
 
-      posters.forEach((p, i) => {
-        const offset = i - currentIdx;
-        const x = offset * spacing;
-        const rot = -offset * maxTilt;
-        const z = offset === 0 ? maxZ : maxZ * (1 - Math.min(Math.abs(offset), 3) / 3);
-        const scale = Math.max(minScale, 1 - Math.abs(offset) * scaleStep);
-        const zidx = offset === 0 ? 3000 : 1000 - Math.abs(offset);
+  function updateCoverflow(addHistory = false) {
+    const spacing = 150;
+    const maxTilt = 45;
+    const maxZ = 150;
+    const minScale = 0.7;
+    const scaleStep = 0.15;
 
-        p.element.style.transform = `
-          translate(-50%, -50%)
-          translateX(${x}px)
-          translateZ(${z}px)
-          rotateY(${rot}deg)
-          scale(${scale})
-        `;
-        p.element.style.zIndex = zidx;
-        p.element.classList.toggle("selected", i === currentIdx);
+    posters.forEach((p, i) => {
+      const offset = i - currentIdx;
+      const x = offset * spacing;
+      const rot = -offset * maxTilt;
+      const z = offset === 0 ? maxZ : maxZ * (1 - Math.min(Math.abs(offset), 3) / 3);
+      const scale = Math.max(minScale, 1 - Math.abs(offset) * scaleStep);
+      const zidx = offset === 0 ? 3000 : 1000 - Math.abs(offset);
 
-        if (addHistory && i === currentIdx) {
-          const exists = [...historyList.children].some(li => li.textContent.includes(p.title));
-          if (!exists) {
-            const li = document.createElement("li");
-            li.innerHTML = `
-              <div style="font-weight:bold;">${p.title}</div>
-              <div style="font-size: 14px; opacity: 0.8;">${p.runtime}</div>
-              <img src="${p.posterUrl}" alt="${p.title}">
-            `;
-            historyList.prepend(li);
-          }
+      p.element.style.transform = `
+        translate(-50%, -50%)
+        translateX(${x}px)
+        translateZ(${z}px)
+        rotateY(${rot}deg)
+        scale(${scale})
+      `;
+      p.element.style.zIndex = zidx;
+      p.element.classList.toggle("selected", i === currentIdx);
+
+      if (addHistory && i === currentIdx) {
+        const exists = [...historyList.children].some(li => li.textContent.includes(p.title));
+        if (!exists) {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <div style="font-weight:bold;">${p.title}</div>
+            <div style="font-size: 14px; opacity: 0.8;">${p.runtime}</div>
+            <img src="${p.posterUrl}" alt="${p.title}">
+          `;
+          historyList.prepend(li);
         }
-      });
-    }
+      }
+    });
+  }
 
-    async function init() {
-      const movies = await Promise.all(entries.map(e => fetchPoster(e.imdbID)));
-      movies.forEach((m, i) => {
-        const div = document.createElement("div");
-        div.className = "poster";
-        div.innerHTML = `
-          <div class="box">
-            <div class="front">
-              <img src="${m.posterUrl}" alt="${m.title}">
-            </div>
+  async function init() {
+    const movies = await Promise.all(entries.map(e => fetchPoster(e.imdbID)));
+    movies.forEach((m, i) => {
+      const div = document.createElement("div");
+      div.className = "poster";
+      div.innerHTML = `
+        <div class="box">
+          <div class="front">
+            <img src="${m.posterUrl}" alt="${m.title}">
           </div>
-        `;
-        flow.appendChild(div);
-        posters.push({ ...m, element: div });
+        </div>
+      `;
 
-        div.addEventListener("click", () => {
-          posters.forEach(p => p.element.classList.remove("flipped"));
-          currentIdx = i;
-          updateCoverflow(false);
-        });
-      });
 
-      currentIdx = Math.floor(posters.length / 2);
-      setTimeout(() => {
-        document.querySelector('.coverflow-container').classList.add('loaded');
-        updateCoverflow(false);
-      }, 100);
+      flow.appendChild(div);
+      posters.push({ ...m, element: div });
 
-      window.addEventListener("keydown", e => {
-        if (e.key === "ArrowLeft" && currentIdx > 0) {
-          posters.forEach(p => p.element.classList.remove("flipped"));
-          currentIdx--;
-          updateCoverflow(false);
-        }
-        if (e.key === "ArrowRight" && currentIdx < posters.length - 1) {
-          posters.forEach(p => p.element.classList.remove("flipped"));
-          currentIdx++;
-          updateCoverflow(false);
-        }
-      });
-
-      let startX = 0, isDragging = false;
-      flow.addEventListener("touchstart", e => {
-        if (e.touches.length === 1) {
-          isDragging = true;
-          startX = e.touches[0].clientX;
-        }
-      });
-      flow.addEventListener("touchmove", e => {
-        if (isDragging) {
-          const deltaX = e.touches[0].clientX - startX;
-          if (Math.abs(deltaX) > 50) {
-            if (deltaX > 0 && currentIdx > 0) {
-              posters.forEach(p => p.element.classList.remove("flipped"));
-              currentIdx--;
-            } else if (deltaX < 0 && currentIdx < posters.length - 1) {
-              posters.forEach(p => p.element.classList.remove("flipped"));
-              currentIdx++;
-            }
-            updateCoverflow(false);
-            isDragging = false;
-          }
-        }
-      });
-      flow.addEventListener("touchend", () => isDragging = false);
-
-      pickBtn.addEventListener("click", () => {
+      div.addEventListener("click", () => {
         posters.forEach(p => p.element.classList.remove("flipped"));
-        currentIdx = Math.floor(Math.random() * posters.length);
-        posters[currentIdx].element.classList.add("flipped");
-        soundPick.play();
-        updateCoverflow(true);
+        currentIdx = i;
+        updateCoverflow(false);
       });
+    });
 
-      clearBtn.addEventListener("click", () => {
-        historyList.innerHTML = "";
-      });
-    }
+    currentIdx = Math.floor(posters.length / 2);
+    setTimeout(() => {
+      document.querySelector('.coverflow-container').classList.add('loaded');
+      updateCoverflow(false);
+    }, 100);
 
-    init();
-  </script>
+    window.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft" && currentIdx > 0) {
+        posters.forEach(p => p.element.classList.remove("flipped"));
+        currentIdx--;
+        updateCoverflow(false);
+      }
+      if (e.key === "ArrowRight" && currentIdx < posters.length - 1) {
+        posters.forEach(p => p.element.classList.remove("flipped"));
+        currentIdx++;
+        updateCoverflow(false);
+      }
+    });
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('assets/sw.js')
-          .then(reg => console.log('SW registered:', reg))
-          .catch(err => console.error('SW error:', err));
-      });
-    }
-  </script>
+    let startX = 0, isDragging = false;
+    flow.addEventListener("touchstart", e => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+      }
+    });
+    flow.addEventListener("touchmove", e => {
+      if (isDragging) {
+        const deltaX = e.touches[0].clientX - startX;
+        if (Math.abs(deltaX) > 50) {
+          if (deltaX > 0 && currentIdx > 0) {
+            posters.forEach(p => p.element.classList.remove("flipped"));
+            currentIdx--;
+          } else if (deltaX < 0 && currentIdx < posters.length - 1) {
+            posters.forEach(p => p.element.classList.remove("flipped"));
+            currentIdx++;
+          }
+          updateCoverflow(false);
+          isDragging = false;
+        }
+      }
+    });
+    flow.addEventListener("touchend", () => isDragging = false);
+
+const pickedIds = new Set();
+
+pickBtn.addEventListener("click", () => {
+  if (pickedIds.size === posters.length) {
+    alert("All movies have been picked!");
+    return;
+  }
+
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * posters.length);
+  } while (pickedIds.has(posters[idx].id));
+
+  pickedIds.add(posters[idx].id);
+
+  posters.forEach(p => p.element.classList.remove("flipped"));
+  currentIdx = idx;
+  posters[currentIdx].element.classList.add("flipped");
+  soundPick.play();
+  updateCoverflow(true);
+});
+  }
+
+  init();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('assets/sw.js')
+        .then(reg => console.log('SW registered:', reg))
+        .catch(err => console.error('SW error:', err));
+    });
+  }
+
+  document.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      btn.classList.add("pressed");
+      setTimeout(() => btn.classList.remove("pressed"), 100);
+    });
+  });
+
+clearBtn.addEventListener("click", () => {
+  historyList.innerHTML = ""; // optional if you're reloading
+  location.reload(); // refreshes the page
+});
+
+
+</script>
+
 </body>
 </html>
