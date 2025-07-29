@@ -6,7 +6,7 @@ const historyList = document.getElementById("history");
 const soundPick = document.getElementById("soundPick");
 const posters = [];
 let currentIdx = 0;
-const apiKey = "225d3569";
+const apiKey = "f05a8ae7";
 const FALLBACK_IMG = "posters/fallback.jpg";
 
 // 🧩 Local Fallbacks & Overrides
