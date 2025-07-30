@@ -1,6 +1,6 @@
 // assets/sw.js
 
-const CACHE_NAME = "cinefilos-v1";
+const CACHE_NAME = "cinefilos-v2";
 const CACHE_FILES = [
   "/",                         // root (index.html)
   "/index.html",               // explicitly cache index.html
