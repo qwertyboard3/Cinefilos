@@ -279,10 +279,9 @@ button:hover {
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('assets/sw.js', { scope: '/' })
-    .then(reg => console.log('SW registered', reg))
-    .catch(err => console.error('SW registration failed:', err));
+  navigator.serviceWorker.register('/Cinefilos/assets/sw.js', { scope: '/Cinefilos/' })
+    .then(reg => console.log('SW Registered:', reg))
+    .catch(err => console.error('SW Registration failed:', err));
 }
 </script>
 
