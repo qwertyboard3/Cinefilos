@@ -278,12 +278,14 @@ button:hover {
 
 
 <script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("assets/sw.js", { scope: "/" })
-    .then(() => console.log("SW registered"))
-    .catch(err => console.error("SW failed:", err));
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('assets/sw.js', { scope: '/' })
+    .then(reg => console.log('SW registered', reg))
+    .catch(err => console.error('SW registration failed:', err));
 }
 </script>
+
 
 </body>
 </html>
