@@ -268,7 +268,13 @@ button:hover {
 <script src="assets/script.js" defer></script>
 
 
-
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("assets/sw.js", { scope: "/" })
+    .then(() => console.log("SW registered"))
+    .catch(err => console.error("SW failed:", err));
+}
+</script>
 
 </body>
 </html>
