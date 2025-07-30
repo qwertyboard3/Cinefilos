@@ -221,7 +221,7 @@ init();
 // 🛎 Service Worker + Button Visuals
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('assets/sw.js')
+    navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('SW registered:', reg))
       .catch(err => console.error('SW error:', err));
   });
