@@ -1,6 +1,6 @@
 const CACHE_NAME = "cinefilos-v4";
 const API_CACHE = "cinefilos-omdb-api-v1";
-const API_TTL = 86400000; // 1 day in ms
+const API_TTL = 360000; // 1 day in ms
 
 const STATIC_FILES = [
   "./",
