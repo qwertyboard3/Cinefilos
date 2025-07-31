@@ -7,10 +7,8 @@ const soundPick = document.getElementById("soundPick");
 const posters = [];
 let currentIdx = 0;
 // 🔑 Multiple OMDb API Keys
-const apiKeys = [
-  "f05a8ae7",
-  "225d3569"
-];
+// 🔑 Single OMDb API Key
+const apiKey = "225d3569";
 
 let apiKeyIndex = 0;
 
@@ -82,14 +80,21 @@ const fetchPoster = async (id) => {
   let posterUrl = FALLBACK_IMG, title = "", runtime = "";
 
   try {
-    const { data } = await getValidApiKey(id);
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+    const data = await res.json();
+    console.log("OMDb data for", id, ":", data);
 
-    title = forcedTitles[id] || data.Title;
-    runtime = forcedRuntime[id] || data.Runtime || "";
-    posterUrl = await validateImage(localFallback[id] || data.Poster || FALLBACK_IMG);
-
+    if (data.Response === "True") {
+      title = forcedTitles[id] || data.Title;
+      runtime = forcedRuntime[id] || data.Runtime || "";
+      posterUrl = await validateImage(localFallback[id] || data.Poster || FALLBACK_IMG);
+    } else {
+      title = forcedTitles[id] || id;
+      runtime = forcedRuntime[id] || "";
+      posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
+    }
   } catch (err) {
-    console.error(`Failed to fetch ${id}:`, err);
+    console.error("Error fetching poster:", err);
     title = forcedTitles[id] || id;
     runtime = forcedRuntime[id] || "";
     posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
