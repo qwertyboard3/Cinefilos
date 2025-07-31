@@ -82,19 +82,14 @@ const fetchPoster = async (id) => {
   let posterUrl = FALLBACK_IMG, title = "", runtime = "";
 
   try {
-    const apiKey = getApiKey(); // ✅ MUST use this now
-    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
-    const data = await res.json();
-    if (data.Response === "True") {
-      title = forcedTitles[id] || data.Title;
-      runtime = forcedRuntime[id] || data.Runtime || "";
-      posterUrl = await validateImage(localFallback[id] || data.Poster || FALLBACK_IMG);
-    } else {
-      title = forcedTitles[id] || id;
-      runtime = forcedRuntime[id] || "";
-      posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
-    }
-  } catch {
+    const { data } = await getValidApiKey(id);
+
+    title = forcedTitles[id] || data.Title;
+    runtime = forcedRuntime[id] || data.Runtime || "";
+    posterUrl = await validateImage(localFallback[id] || data.Poster || FALLBACK_IMG);
+
+  } catch (err) {
+    console.error(`Failed to fetch ${id}:`, err);
     title = forcedTitles[id] || id;
     runtime = forcedRuntime[id] || "";
     posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
