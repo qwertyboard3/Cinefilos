@@ -8,15 +8,31 @@ const posters = [];
 let currentIdx = 0;
 // 🔑 Multiple OMDb API Keys
 const apiKeys = [
-  "f05a8ae7", // key 1
-  "225d3569"  // key 2
+  "f05a8ae7",
+  "225d3569"
 ];
 
 let apiKeyIndex = 0;
-function getApiKey() {
-  const key = apiKeys[apiKeyIndex];
-  apiKeyIndex = (apiKeyIndex + 1) % apiKeys.length; // rotate keys
-  return key;
+
+async function getValidApiKey(id) {
+  for (let i = 0; i < apiKeys.length; i++) {
+    const key = apiKeys[apiKeyIndex];
+    apiKeyIndex = (apiKeyIndex + 1) % apiKeys.length;
+    
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${key}&i=${id}`);
+    const data = await res.json();
+    
+    if (data.Response === "True") return { data, key };
+    if (data.Error && data.Error.includes("limit")) {
+      console.warn(`Key ${key} limit reached, switching...`);
+      continue;
+    }
+    if (data.Error && data.Error.includes("Invalid API key")) {
+      console.warn(`Key ${key} invalid, switching...`);
+      continue;
+    }
+  }
+  throw new Error("All API keys exhausted or invalid.");
 }
 const FALLBACK_IMG = "posters/fallback.jpg";
 
