@@ -6,8 +6,18 @@ const historyList = document.getElementById("history");
 const soundPick = document.getElementById("soundPick");
 const posters = [];
 let currentIdx = 0;
-const apiKey = "f05a8ae7",
-               "225d3569" 
+// 🔑 Multiple OMDb API Keys
+const apiKeys = [
+  "f05a8ae7", // key 1
+  "225d3569"  // key 2
+];
+
+let apiKeyIndex = 0;
+function getApiKey() {
+  const key = apiKeys[apiKeyIndex];
+  apiKeyIndex = (apiKeyIndex + 1) % apiKeys.length; // rotate keys
+  return key;
+}
 const FALLBACK_IMG = "posters/fallback.jpg";
 
 // 🧩 Local Fallbacks & Overrides
