@@ -66,6 +66,7 @@ const fetchPoster = async (id) => {
   let posterUrl = FALLBACK_IMG, title = "", runtime = "";
 
   try {
+    const apiKey = getApiKey(); // ✅ MUST use this now
     const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
     const data = await res.json();
     if (data.Response === "True") {
