@@ -25,7 +25,8 @@ const entries = [
   //{ title: "Big Fish", imdbID: "tt0319061" },
   //{ title: "This Is England", imdbID: "tt0480025" },
   //{ title: "12 Monkeys", imdbID: "tt0114746" },
-  { title: "Mecánica Nacionale", imdbID: "tt0134817" },
+  { title: "Mecánica Nacional", imdbID: "tt0134817" },
   { title: "Collateral", imdbID: "tt0369339" },
 ];
+
 
