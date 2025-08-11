@@ -8,7 +8,7 @@ const posters = [];
 let currentIdx = 0;
 
 const localFallback = {
-  "tt0073348": "posters/mecanica.jpg"
+  "tt0073348": "posters/tt0134817.jpg"
 };
 
 // 🔑 Single OMDb API Key
