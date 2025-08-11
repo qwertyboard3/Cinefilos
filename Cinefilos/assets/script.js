@@ -7,6 +7,10 @@ const soundPick = document.getElementById("soundPick");
 const posters = [];
 let currentIdx = 0;
 
+const localFallback = {
+  "tt0073348": "posters/mecanica.jpg"
+};
+
 // 🔑 Single OMDb API Key
 const apiKey = "//225d3569";
 
