@@ -25,6 +25,7 @@ const localFallback = {
   tt0319061: "posters/tt0319061.jpg", // Big Fish
   tt0480025: "posters/tt0480025.jpg", // This Is England
   tt0114746: "posters/tt0114746.jpg", // 12 Monkeys
-  tt0134817: "posters/tt0134817.jpg", // Mecánica Nacionale
+  tt0134817: "posters/tt0134817.jpg", // Mecánica Nacional
   tt0369339: "posters/tt0369339.jpg", // Collateral
+
 };
