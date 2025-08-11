@@ -6,9 +6,9 @@ const historyList = document.getElementById("history");
 const soundPick = document.getElementById("soundPick");
 const posters = [];
 let currentIdx = 0;
-// 🔑 Multiple OMDb API Keys
+
 // 🔑 Single OMDb API Key
-const apiKey = "225d3569";
+const apiKey = "//225d3569";
 
 let apiKeyIndex = 0;
 
@@ -34,36 +34,7 @@ async function getValidApiKey(id) {
 }
 const FALLBACK_IMG = "posters/fallback.jpg";
 
-// 🧩 Local Fallbacks & Overrides
-const localFallback = {
-      tt0134817: "posters/mecanica.jpg",
-      tt0110413: "posters/leon.png",
-      tt0034820: "posters/gaucha.jpg",
-      tt0045230: "posters/thief.jpg",
-      tt0064356: "posters/cow.jpg",
-      tt0123885: "posters/trinquete.jpg",
-      tt0070235: "posters/horse.jpg",
-      tt0075726: "posters/barbara.jpg",
-      tt0089078: "posters/elegido.jpg",
-      tt0113855: "posters/pearl.jpg",
-      tt0896690: "posters/miedo.jpg",
-      tt1910653: "posters/triste.jpg",
-      tt17068914: "posters/borges.jpg",
-      tt1951524: "posters/sanguivorous.jpg",
-      tt6833964: "posters/sonora.jpg",
-      tt13686040: "posters/quarantine.jpg",
-      tt23769666: "posters/1984.jpg",
-      tt19880934: "posters/failure.jpg",
-      tt26675379: "posters/vitoria.jpg",
-};
-const forcedTitles = {
-  "tt0134817": "Mecánica Nacional",
-  "tt26675379": "Vitória"
-};
-const forcedRuntime = {
-  "tt0134817": "95 min",
-  "tt26675379": "112 min"
-};
+
 
 // ✅ Image Validation
 async function validateImage(url) {
@@ -76,33 +47,53 @@ async function validateImage(url) {
 }
 
 // 🎞 Fetch Poster Metadata
+// Cache duration (in ms) — e.g. 7 days
+const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000;
+
 const fetchPoster = async (id) => {
   let posterUrl = FALLBACK_IMG, title = "", runtime = "";
 
+  // 🔍 1. Check cache first
+  const cacheKey = `poster_${id}`;
+  const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+
+  if (cachedData && (Date.now() - cachedData.timestamp < CACHE_DURATION)) {
+    console.log(`Using cached data for ${id}`);
+    return cachedData.data;
+  }
+
+  // 🌐 2. Otherwise fetch from API
   try {
     const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
     const data = await res.json();
     console.log("OMDb data for", id, ":", data);
 
     if (data.Response === "True") {
-      title = forcedTitles[id] || data.Title;
+      title = movieTitles[id] || data.Title;
       runtime = forcedRuntime[id] || data.Runtime || "";
       posterUrl = await validateImage(localFallback[id] || data.Poster || FALLBACK_IMG);
     } else {
-      title = forcedTitles[id] || id;
+      title = movieTitles[id] || id;
       runtime = forcedRuntime[id] || "";
       posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
     }
   } catch (err) {
     console.error("Error fetching poster:", err);
-    title = forcedTitles[id] || id;
+    title = movieTitles[id] || id;
     runtime = forcedRuntime[id] || "";
     posterUrl = await validateImage(localFallback[id] || FALLBACK_IMG);
   }
 
-  return { id, title, posterUrl, runtime };
-};
+  const result = { id, title, posterUrl, runtime };
 
+  // 💾 3. Store in localStorage
+  localStorage.setItem(cacheKey, JSON.stringify({
+    timestamp: Date.now(),
+    data: result
+  }));
+
+  return result;
+};
 // 🔄 Update Coverflow Display
 function updateCoverflow(addHistory = false) {
   const spacing = 150, maxTilt = 45, maxZ = 150, minScale = 0.7, scaleStep = 0.15;
