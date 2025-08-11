@@ -25,6 +25,7 @@ const movieTitles = {
   "tt0319061": "Big Fish",
   "tt0480025": "This Is England",
   "tt0114746": "12 Monkeys",
-  "tt0134817": "Mecánica Nacionale",
+  "tt0134817": "Mecánica Nacional",
   "tt0369339": "Collateral",
+
 };
