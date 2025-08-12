@@ -204,7 +204,7 @@ const movieTitles = {
   "tt2316411": "Enemy",
   "tt1854513": "Blancanieves",
   "tt3568002": "The Witness",
-  "tt4226388": "Victoria",
+  "tt4226388": "Vicoria",
   "tt8579674": "1917",
   "tt6833964": "Sonora",
   "tt9451096": "Workforce",
@@ -219,9 +219,9 @@ const movieTitles = {
   "tt34463310": "Detective Chinatown 1900",
   "tt34956443": "Ne Zha 2",
   "tt13462900": "The Battle at Lake Changjin",
-  "tt26675379": "Vitória",
   "tt2184331": "Una noche",
 };
+
 
 
 
