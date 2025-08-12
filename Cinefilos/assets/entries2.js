@@ -169,6 +169,5 @@ const entries = [
   { title: "Detective Chinatown 1900", imdbID: "tt34463310" },
   { title: "Ne Zha 2", imdbID: "tt34956443" },
   { title: "The Battle at Lake Changjin", imdbID: "tt13462900" },
-  { title: "Vitória", imdbID: "tt26675379" },
   { title: "Una noche", imdbID: "tt2184331" },
 ];
