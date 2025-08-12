@@ -27,6 +27,27 @@ const movieTitles = {
   "tt0114746": "12 Monkeys",
   "tt0134817": "Mecánica Nacional",
   "tt0369339": "Collateral",
-
+//
+  "tt7131622": "Once Upon a Time... in Hollywood",
+  "tt0162346": "Ghost World",
+  "tt0128445": "Rushmore",
+  "tt0069089": "Pink Flamingos",
+  "tt0100935": "Wild at Heart",
+  "tt0340855": "Monster",
+  "tt0377091": "Mean Creek",
+  "tt0114906": "Welcome to the Dollhouse",
+  "tt3499048": "Gueros",
+  "tt0052357": "Vertigo",
+  "tt0070544": "Fantastic Planet",
+  "tt0298203": "8 Mile",
+  "tt0208502": "Angel's Egg",
+  "tt0481369": "The Number 23",
+  "tt0078480": "Watership Down",
+  "tt0225009": "964 Pinocchio",
+  "tt0101698": "Defending Your Life",
+  "tt0139239": "Go",
+  "tt0110630": "The Friends",
+  "tt0010323": "The Cabinet of Dr. Caligari",
 };
+
 
