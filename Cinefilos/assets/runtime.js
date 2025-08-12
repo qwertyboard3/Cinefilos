@@ -27,4 +27,25 @@ const forcedRuntime = {
   "tt0114746": "129 min", // 12 Monkeys
   "tt0134817": "105 min", // Mecánica Nacionale
   "tt0369339": "120 min", // Collateral
+//
+  "tt7131622": "161 min", // Once Upon a Time... in Hollywood
+  "tt0162346": "111 min", // Ghost World
+  "tt0128445": "93 min", // Rushmore
+  "tt0069089": "93 min", // Pink Flamingos
+  "tt0100935": "125 min", // Wild at Heart
+  "tt0340855": "109 min", // Monster
+  "tt0377091": "90 min", // Mean Creek
+  "tt0114906": "88 min", // Welcome to the Dollhouse
+  "tt3499048": "106 min", // Gueros
+  "tt0052357": "128 min", // Vertigo
+  "tt0070544": "72 min", // Fantastic Planet
+  "tt0298203": "110 min", // 8 Mile
+  "tt0208502": "71 min", // Angel's Egg
+  "tt0481369": "98 min", // The Number 23
+  "tt0078480": "92 min", // Watership Down
+  "tt0225009": "97 min", // 964 Pinocchio
+  "tt0101698": "112 min", // Defending Your Life
+  "tt0139239": "102 min", // Go
+  "tt0110630": "113 min", // The Friends
+  "tt0010323": "67 min", // The Cabinet of Dr. Caligari  
 };
