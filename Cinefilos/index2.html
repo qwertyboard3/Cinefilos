@@ -7,11 +7,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>cinefilos</title>
 
-  <link rel="manifest" href="assets/manifest.json">
-  <meta name="theme-color" content="#111111">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Cinéfilos">
-  <meta name="apple-touch-icon" href="assets/icons/icon-192.png">
+<!-- Manifest -->
+<link rel="manifest" href="assets/manifest.json">
+
+<!-- Theme Color -->
+<meta name="theme-color" content="#111111">
+
+<!-- Chrome / Android -->
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS Safari (still supported for now) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cinéfilos">
+<meta name="apple-touch-icon" href="assets/icons/icon-192.png">
+
 
   <style>
     body {
@@ -241,7 +250,7 @@ button:hover {
 </head>
 <body>
 
-  <a href="index.html">
+    <a href="index.html">
   <img src="assets/cinefilos.png" alt="Cinefilos" class="header-image">
 </a>
 
@@ -264,10 +273,20 @@ button:hover {
   <audio id="soundPick" src="assets/sounds/pick.wav"></audio>
 
 <!-------------------------------------------------------------------------------------------------------script---------------------------------------------------------------------------------------------------------------------->
-<script src="assets/entries2.js" defer></script>
+<script src="assets/posters.js" defer></script>
+<script src="assets/runtime.js" defer></script>
+<script src="assets/titles.js" defer></script>
+<script src="assets/entries.js" defer></script>
 <script src="assets/script.js" defer></script>
 
 
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/Cinefilos/assets/sw.js', { scope: '/Cinefilos/' })
+    .then(reg => console.log('SW Registered:', reg))
+    .catch(err => console.error('SW Registration failed:', err));
+}
+</script>
 
 
 </body>
