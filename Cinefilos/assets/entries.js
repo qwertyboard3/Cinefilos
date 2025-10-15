@@ -7,7 +7,6 @@ const entries = [
   { title: "Cape Fear", imdbID: "tt0101540" },
   { title: "The Green Mile", imdbID: "tt0120689" },
   { title: "Sleepers", imdbID: "tt0117665" },
-  { title: "The Room", imdbID: "tt0368226" },
   { title: "Knives Out", imdbID: "tt8946378" },
   { title: "Dante’s Peak", imdbID: "tt0118928" },
   { title: "The Big Lebowski", imdbID: "tt0118715" },
@@ -43,6 +42,7 @@ const entries = [
   { title: "The Friends", imdbID: "tt0110630" },
   { title: "The Cabinet of Dr. Caligari", imdbID: "tt0010323" },
 ];
+
 
 
 
