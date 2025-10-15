@@ -34,20 +34,16 @@ const entries = [
   { title: "Wild at Heart", imdbID: "tt0100935" },
   { title: "Monster", imdbID: "tt0340855" },
   { title: "Mean Creek", imdbID: "tt0377091" },
-  { title: "Welcome to the Dollhouse", imdbID: "tt0114906" },
-  { title: "Gueros", imdbID: "tt3499048" },
   { title: "Vertigo", imdbID: "tt0052357" },
   { title: "Fantastic Planet", imdbID: "tt0070544" },
-  { title: "8 Mile", imdbID: "tt0298203" },
   { title: "Angel's Egg", imdbID: "tt0208502" },
   { title: "The Number 23", imdbID: "tt0481369" },
   { title: "Watership Down", imdbID: "tt0078480" },
-  { title: "964 Pinocchio", imdbID: "tt0225009" },
   { title: "Defending Your Life", imdbID: "tt0101698" },
-  { title: "Go", imdbID: "tt0139239" },
   { title: "The Friends", imdbID: "tt0110630" },
   { title: "The Cabinet of Dr. Caligari", imdbID: "tt0010323" },
 ];
+
 
 
 
