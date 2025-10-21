@@ -19,7 +19,7 @@ const entries = [
   { title: "Pet Sematary", imdbID: "tt0098084" },
   { title: "The Wizard", imdbID: "tt0098663" },
   { title: "Cero y van 4", imdbID: "tt0425818" },
-  { title: "Training Day", imdbID: "tt0139654" },
+  //{ title: "Training Day", imdbID: "tt0139654" },
   { title: "Hard Target", imdbID: "tt0107076" },
   { title: "Big Fish", imdbID: "tt0319061" },
   { title: "This Is England", imdbID: "tt0480025" },
@@ -42,6 +42,7 @@ const entries = [
   { title: "The Friends", imdbID: "tt0110630" },
   { title: "The Cabinet of Dr. Caligari", imdbID: "tt0010323" },
 ];
+
 
 
 
