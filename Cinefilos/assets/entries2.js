@@ -42,7 +42,7 @@ const entries = [
   { title: "The Wild Bunch", imdbID: "tt0065214" },
   { title: "Fantastic Planet", imdbID: "tt0070544" },
   { title: "The French Connection", imdbID: "tt0067116" },
-  { title: "Time Piece", imdbID: "tt0059807" },
+//  { title: "Time Piece", imdbID: "tt0059807" },
   { title: "What's Up", imdbID: "tt0061177" },
   { title: "La classe operaia va in paradiso", imdbID: "tt0066919" },
   { title: "The Reconstruction", imdbID: "tt0063493" },
