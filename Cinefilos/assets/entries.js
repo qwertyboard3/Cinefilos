@@ -29,7 +29,7 @@ const entries = [
   { title: "Once Upon a Time... in Hollywood", imdbID: "tt7131622" },
   { title: "Ghost World", imdbID: "tt0162346" },
   { title: "Rushmore", imdbID: "tt0128445" },
-  { title: "Pink Flamingos", imdbID: "tt0069089" },
+ // { title: "Pink Flamingos", imdbID: "tt0069089" },
   { title: "Wild at Heart", imdbID: "tt0100935" },
   { title: "Monster", imdbID: "tt0340855" },
   { title: "Mean Creek", imdbID: "tt0377091" },
@@ -42,6 +42,7 @@ const entries = [
   { title: "The Friends", imdbID: "tt0110630" },
   { title: "The Cabinet of Dr. Caligari", imdbID: "tt0010323" },
 ];
+
 
 
 
