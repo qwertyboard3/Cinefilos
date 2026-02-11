@@ -38,7 +38,7 @@
   { "title": "The Battle of Algiers", "imdbID": "tt0058946" },
   { "title": "Crónica de un niño solo", "imdbID": "tt0057977" },
   { "title": "Andrei Rublev", "imdbID": "tt0060107" },
-  { "title": "The Color of Pomegranates", "imdbID": "tt0063555" },
+  //{ "title": "The Color of Pomegranates", "imdbID": "tt0063555" },
   { "title": "The Wild Bunch", "imdbID": "tt0065214" },
   { "title": "Fantastic Planet", "imdbID": "tt0070544" },
   { "title": "The French Connection", "imdbID": "tt0067116" },
