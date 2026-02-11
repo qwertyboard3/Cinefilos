@@ -1,5 +1,5 @@
 const entries = [
-  { title: "Memento", imdbID: "tt0209144" },
+//{ title: "Memento", imdbID: "tt0209144" },
   { title: "Up in Smoke", imdbID: "tt0078446" },
   { title: "The Vindicator", imdbID: "tt0092172" },
   { title: "Alien", imdbID: "tt0078748" },
@@ -42,6 +42,7 @@ const entries = [
   { title: "The Friends", imdbID: "tt0110630" },
   { title: "The Cabinet of Dr. Caligari", imdbID: "tt0010323" },
 ];
+
 
 
 
