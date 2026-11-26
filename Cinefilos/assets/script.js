@@ -188,8 +188,10 @@ async function init() {
         <div class="case-top"></div>
         <div class="back">
           <div class="details">
+            <span class="dvd-format">DVD VIDEO</span>
             <h3></h3>
             <p></p>
+            <span class="dvd-barcode" aria-hidden="true"></span>
           </div>
         </div>
       </div>
@@ -202,21 +204,38 @@ async function init() {
         image.src = FALLBACK_IMG;
       }
     });
-    div.querySelector(".details h3").textContent = m.title;
-    div.querySelector(".details p").textContent = m.runtime || "Duration not available.";
+    const back = div.querySelector(".back");
+    const details = back.querySelector(".details");
+    const year = m.year || movieYears[m.id];
+    details.querySelector("h3").textContent = m.title;
+    details.querySelector("p").textContent = [year, m.runtime].filter(Boolean).join(" · ");
+    let coverChecked = false;
+    function showBackCover() {
+      if (coverChecked) return;
+      coverChecked = true;
+      const cover = new Image();
+      cover.alt = `DVD back cover for ${m.title}`;
+      cover.className = "dvd-back-cover";
+      cover.addEventListener("load", () => {
+        details.hidden = true;
+        back.appendChild(cover);
+      }, { once: true });
+      cover.src = m.backCoverUrl || `posters/backs/${m.id}.jpg`;
+    }
 
     const caption = document.createElement("span");
     caption.className = "movie-caption";
-    const year = m.year || movieYears[m.id];
     caption.textContent = year ? `${m.title} (${year})` : m.title;
     div.appendChild(caption);
     flow.appendChild(div);
-    posters.push({ ...m, element: div, image });
+    posters.push({ ...m, element: div, image, showBackCover });
 
     div.addEventListener("click", () => {
+      const showBack = !div.classList.contains("flipped");
       posters.forEach(p => p.element.classList.remove("flipped"));
       currentIdx = i;
-      div.classList.toggle("flipped");
+      div.classList.toggle("flipped", showBack);
+      if (showBack) showBackCover();
       updateCoverflow(false);
     });
   });
@@ -281,6 +300,7 @@ async function init() {
     currentIdx = idx;
 
     posters[currentIdx].element.classList.add("flipped");
+    posters[currentIdx].showBackCover();
     soundPick.play();
     updateCoverflow(true);
   });
