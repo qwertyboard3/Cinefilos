@@ -39,6 +39,18 @@ def list_movies(client_id):
                 "OAuth required": "oauth" in body,
             }
             detail = ", ".join(label for label, present in signals.items() if present)
+            if not detail and content_type == "application/json":
+                try:
+                    payload = json.loads(body)
+                except ValueError:
+                    payload = None
+                if isinstance(payload, dict):
+                    messages = [
+                        value.replace(client_id.lower(), "[redacted]")
+                        for key in ("error", "message", "error_description")
+                        if isinstance(value := payload.get(key), str)
+                    ]
+                    detail = " ".join(" ".join(messages).split())[:240]
             raise SystemExit(
                 f"Trakt list request returned HTTP {error.code} ({content_type})"
                 + (f": {detail}" if detail else "")
