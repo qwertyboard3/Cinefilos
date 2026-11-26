@@ -28,6 +28,19 @@ def list_movies(client_id):
                 items = json.load(response)
                 page_count = int(response.headers.get("X-Pagination-Page-Count", "1"))
         except HTTPError as error:
+            probe = ""
+            if error.code == 403:
+                public_request = Request(
+                    "https://api.trakt.tv/movies/trending?limit=1",
+                    headers=request.headers,
+                )
+                try:
+                    with urlopen(public_request, timeout=15) as response:
+                        probe = f"; public trending endpoint returned HTTP {response.status}"
+                except HTTPError as public_error:
+                    probe = f"; public trending endpoint returned HTTP {public_error.code}"
+                except OSError:
+                    probe = "; public trending endpoint could not be reached"
             content_type = error.headers.get_content_type()
             body = error.read(4096).decode("utf-8", errors="replace").lower()
             signals = {
@@ -54,6 +67,7 @@ def list_movies(client_id):
             raise SystemExit(
                 f"Trakt list request returned HTTP {error.code} ({content_type})"
                 + (f": {detail}" if detail else "")
+                + probe
             ) from None
         if not isinstance(items, list):
             raise ValueError("Unexpected Trakt list response")
