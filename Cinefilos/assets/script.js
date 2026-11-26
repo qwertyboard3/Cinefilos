@@ -241,11 +241,8 @@ async function init() {
     posters.push({ ...m, element: div, image, showBackCover });
 
     div.addEventListener("click", () => {
-      const showBack = !div.classList.contains("flipped");
       posters.forEach(p => p.element.classList.remove("flipped"));
       currentIdx = i;
-      div.classList.toggle("flipped", showBack);
-      if (showBack) showBackCover();
       updateCoverflow(false);
     });
   });
