@@ -139,16 +139,25 @@ function updateCoverflow(addHistory = false) {
 
 // 🚀 Initialize Posters with Shuffle
 async function init() {
-  const imported = new Map(
-    (typeof traktMovies === "undefined" ? [] : traktMovies).map(movie => [movie.id, movie])
+  const snapshot = typeof traktMovies === "undefined" ? [] : traktMovies;
+  const activeIds = Array.isArray(snapshot) ? null : new Set(snapshot.activeIds);
+  const imported = Array.isArray(snapshot) ? snapshot : snapshot.movies;
+  const catalog = new Map(
+    entries
+      .filter(entry => !activeIds || activeIds.has(entry.imdbID))
+      .map(entry => [entry.imdbID, { id: entry.imdbID }])
   );
-  const catalog = new Map(entries.map(entry => [entry.imdbID, { id: entry.imdbID }]));
-  for (const movie of imported.values()) {
+  for (const movie of imported) {
     if (!catalog.has(movie.id)) catalog.set(movie.id, movie);
   }
   const movies = await Promise.all(
     [...catalog.values()].map(movie => movie.posterUrl ? movie : fetchPoster(movie.id))
   );
+  if (movies.length === 0) {
+    flow.textContent = "No movies on the Trakt list.";
+    pickBtn.disabled = true;
+    return;
+  }
 
   // Shuffle Mode
   for (let i = movies.length - 1; i > 0; i--) {

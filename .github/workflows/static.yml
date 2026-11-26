@@ -45,7 +45,7 @@ jobs:
             exit 0
           fi
           python3 .github/sync_trakt.py
-      - name: Check for newly imported movies
+      - name: Check for Trakt catalog changes
         id: imports
         run: |
           git add -- Cinefilos/assets/trakt-movies.js
@@ -68,7 +68,7 @@ jobs:
         if: github.event_name != 'schedule' || steps.imports.outputs.changed == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Save newly imported movies
+      - name: Save Trakt catalog changes
         if: steps.imports.outputs.changed == 'true'
         run: |
           git -c user.name=github-actions -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m "Sync Cinefilos movies from Trakt"

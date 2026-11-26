@@ -1,4 +1,4 @@
-"""Add new movies from the configured Trakt list to the Cinefilos catalog."""
+"""Mirror the configured Trakt list in the main Cinefilos gallery."""
 
 import json
 import os
@@ -16,6 +16,7 @@ LIST = "https://api.trakt.tv/users/qwertyboard2/lists/movies/items/movies"
 
 def list_movies(client_id):
     page = 1
+    seen = set()
     while True:
         params = urlencode({"page": page, "limit": 100, "extended": "full,images"})
         request = Request(f"{LIST}?{params}", headers={
@@ -29,6 +30,7 @@ def list_movies(client_id):
             with urlopen(request, timeout=30) as response:
                 items = json.load(response)
                 page_count = int(response.headers.get("X-Pagination-Page-Count", "1"))
+                item_count = response.headers.get("X-Pagination-Item-Count")
         except HTTPError as error:
             probe = ""
             if error.code == 403:
@@ -71,10 +73,23 @@ def list_movies(client_id):
                 + (f": {detail}" if detail else "")
                 + probe
             ) from None
-        if not isinstance(items, list):
+        if not isinstance(items, list) or any(
+            not isinstance(item, dict) or item.get("type") != "movie"
+            or not isinstance(item.get("movie"), dict)
+            or not (item["movie"].get("ids") or {}).get("trakt")
+            for item in items
+        ):
             raise ValueError("Unexpected Trakt list response")
-        yield from (item["movie"] for item in items if item.get("type") == "movie")
+        for item in items:
+            movie = item["movie"]
+            trakt_id = movie["ids"]["trakt"]
+            if trakt_id in seen:
+                raise ValueError("Trakt list changed during pagination; retrying next run.")
+            seen.add(trakt_id)
+            yield movie
         if page >= page_count:
+            if item_count is not None and len(seen) != int(item_count):
+                raise ValueError("Incomplete Trakt list response; keeping the published catalog.")
             break
         page += 1
 
@@ -108,34 +123,42 @@ def sync(client_id):
     if not raw.startswith(PREFIX) or not raw.endswith(";"):
         raise ValueError("Unexpected Cinefilos Trakt catalog format")
     saved = json.loads(raw[len(PREFIX):-1])
-    existing_ids = {item["id"] for item in saved}
+    previous_movies = saved if isinstance(saved, list) else saved["movies"]
+    previous_by_id = {movie["id"]: movie for movie in previous_movies}
     primary_catalog = (SITE / "assets/entries.js").read_text(encoding="utf-8")
-    existing_ids.update(re.findall(r'(?m)^\s*\{[^\n]*imdbID:\s*"(tt\d+)"', primary_catalog))
-    added = []
-    for movie in list_movies(client_id):
+    primary_ids = set(re.findall(r'(?m)^\s*\{[^\n]*imdbID:\s*"(tt\d+)"', primary_catalog))
+    active_ids = set()
+    imports = {}
+    for movie in list(list_movies(client_id)):
         imdb_id = (movie.get("ids") or {}).get("imdb")
         if not imdb_id or not re.fullmatch(r"tt\d{7,}", imdb_id):
             print("Skipped a Trakt movie without a valid IMDb ID.")
             continue
-        if imdb_id in existing_ids:
+        if imdb_id in active_ids:
+            continue
+        active_ids.add(imdb_id)
+        if imdb_id in primary_ids:
+            continue
+        if imdb_id in previous_by_id:
+            imports[imdb_id] = previous_by_id[imdb_id]
             continue
         year = movie["year"]
         runtime = movie.get("runtime")
         if not isinstance(year, int) or not movie.get("title"):
             raise ValueError(f"Incomplete Trakt metadata for {imdb_id}")
-        added.append({
+        imports[imdb_id] = {
             "id": imdb_id,
             "title": movie["title"],
             "year": year,
             "runtime": f"{runtime} min" if runtime else "",
             "posterUrl": cache_poster(movie, imdb_id),
-        })
-        existing_ids.add(imdb_id)
-    if added:
+        }
+    snapshot = {"activeIds": sorted(active_ids), "movies": [imports[id] for id in sorted(imports)]}
+    if snapshot != saved:
         temporary = CATALOG.with_suffix(".tmp")
-        temporary.write_text(PREFIX + json.dumps(saved + added, indent=2) + ";\n", encoding="utf-8")
+        temporary.write_text(PREFIX + json.dumps(snapshot, indent=2) + ";\n", encoding="utf-8")
         temporary.replace(CATALOG)
-    print(f"Added {len(added)} movies from Trakt.")
+    print(f"Synced {len(active_ids)} main-gallery movies from Trakt.")
 
 
 if __name__ == "__main__":
