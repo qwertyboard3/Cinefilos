@@ -181,7 +181,7 @@
 }
 
 .poster.flipped .box {
-  animation: dvd-case-spin 0.65s ease-in-out;
+  animation: dvd-case-spin 0.85s cubic-bezier(0.42, 0, 0.38, 1);
 }
 
 .poster.flipped .back {
