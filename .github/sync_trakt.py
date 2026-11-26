@@ -22,6 +22,8 @@ def list_movies(client_id):
             "trakt-api-key": client_id,
             "trakt-api-version": "2",
             "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Cinefilos/1.0",
         })
         try:
             with urlopen(request, timeout=30) as response:
@@ -131,7 +133,7 @@ def sync(client_id):
 
 
 if __name__ == "__main__":
-    client_id = os.environ.get("TRAKT_CLIENT_ID")
+    client_id = os.environ.get("TRAKT_CLIENT_ID", "").strip()
     if not client_id:
         raise SystemExit("Configure TRAKT_CLIENT_ID in GitHub Actions secrets first.")
     sync(client_id)
