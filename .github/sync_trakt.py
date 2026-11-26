@@ -4,6 +4,7 @@ import json
 import os
 import re
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, urlopen
 
@@ -22,9 +23,26 @@ def list_movies(client_id):
             "trakt-api-version": "2",
             "Accept": "application/json",
         })
-        with urlopen(request, timeout=30) as response:
-            items = json.load(response)
-            page_count = int(response.headers.get("X-Pagination-Page-Count", "1"))
+        try:
+            with urlopen(request, timeout=30) as response:
+                items = json.load(response)
+                page_count = int(response.headers.get("X-Pagination-Page-Count", "1"))
+        except HTTPError as error:
+            content_type = error.headers.get_content_type()
+            body = error.read(4096).decode("utf-8", errors="replace").lower()
+            signals = {
+                "Cloudflare challenge": error.headers.get("cf-mitigated") == "challenge"
+                or "just a moment" in body,
+                "limited access": "limited access" in body,
+                "production access": "production access" in body,
+                "private list": "private" in body,
+                "OAuth required": "oauth" in body,
+            }
+            detail = ", ".join(label for label, present in signals.items() if present)
+            raise SystemExit(
+                f"Trakt list request returned HTTP {error.code} ({content_type})"
+                + (f": {detail}" if detail else "")
+            ) from None
         if not isinstance(items, list):
             raise ValueError("Unexpected Trakt list response")
         yield from (item["movie"] for item in items if item.get("type") == "movie")
