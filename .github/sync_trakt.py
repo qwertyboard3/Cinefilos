@@ -85,10 +85,16 @@ def cache_poster(movie, imdb_id):
         parsed = urlsplit(url)
         if not parsed.hostname or not parsed.hostname.endswith(".trakt.tv") or parsed.username:
             continue
-        with urlopen(url, timeout=30) as response:
-            data = response.read(5_000_001)
+        try:
+            request = Request(url, headers={"User-Agent": "Cinefilos/1.0", "Accept": "image/webp"})
+            with urlopen(request, timeout=30) as response:
+                data = response.read(5_000_001)
+        except OSError:
+            print(f"Could not download a Trakt poster for {imdb_id}.")
+            continue
         if len(data) > 5_000_000 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
-            raise ValueError(f"Invalid Trakt poster for {imdb_id}")
+            print(f"Invalid Trakt poster for {imdb_id}.")
+            continue
         relative_path = f"posters/trakt/{imdb_id}.webp"
         path = SITE / relative_path
         path.parent.mkdir(exist_ok=True)
