@@ -13,7 +13,6 @@ const traktMovies = {
     "tt0092172",
     "tt0098084",
     "tt0098663",
-    "tt0100935",
     "tt0101540",
     "tt0101698",
     "tt0105236",
@@ -25,6 +24,7 @@ const traktMovies = {
     "tt0118715",
     "tt0118928",
     "tt0119237",
+    "tt0120338",
     "tt0120689",
     "tt0128445",
     "tt0162346",
@@ -45,6 +45,13 @@ const traktMovies = {
     "tt8946378"
   ],
   "movies": [
+    {
+      "id": "tt0120338",
+      "title": "Titanic",
+      "year": 1997,
+      "runtime": "194 min",
+      "posterUrl": "posters/trakt/tt0120338.webp"
+    },
     {
       "id": "tt0258470",
       "title": "Bubble Boy",
