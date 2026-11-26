@@ -188,10 +188,15 @@ async function init() {
         <div class="case-top"></div>
         <div class="back">
           <div class="details">
-            <span class="dvd-format">DVD VIDEO</span>
-            <h3></h3>
+            <header class="dvd-header">
+              <h3></h3>
+            </header>
+            <img class="dvd-artwork" alt="">
             <p></p>
-            <span class="dvd-barcode" aria-hidden="true"></span>
+            <footer class="dvd-footer">
+              <span class="dvd-format">DVD VIDEO</span>
+              <span class="dvd-barcode" aria-hidden="true"></span>
+            </footer>
           </div>
         </div>
       </div>
@@ -213,6 +218,11 @@ async function init() {
     function showBackCover() {
       if (coverChecked) return;
       coverChecked = true;
+      const artwork = details.querySelector(".dvd-artwork");
+      artwork.addEventListener("error", () => {
+        artwork.hidden = true;
+      }, { once: true });
+      artwork.src = m.posterUrl;
       const cover = new Image();
       cover.alt = `DVD back cover for ${m.title}`;
       cover.className = "dvd-back-cover";
