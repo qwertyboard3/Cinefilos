@@ -51,6 +51,9 @@ async function validateImage(url) {
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000;
 
 const fetchPoster = async (id) => {
+  if (localFallback[id] && movieTitles[id]) {
+    return { id, title: movieTitles[id], posterUrl: localFallback[id], runtime: forcedRuntime[id] || "" };
+  }
   let posterUrl = FALLBACK_IMG, title = "", runtime = "";
 
   // 🔍 1. Check cache first
@@ -100,6 +103,12 @@ function updateCoverflow(addHistory = false) {
 
   posters.forEach((p, i) => {
     const offset = i - currentIdx;
+    p.element.hidden = Math.abs(offset) > 3;
+    if (p.element.hidden) {
+      p.image.removeAttribute("src");
+      return;
+    }
+    if (!p.image.hasAttribute("src")) p.image.src = p.posterUrl;
     const x = offset * spacing;
     const rot = -Math.sign(offset) * maxTilt;
     const z = offset === 0 ? maxZ : maxZ * (1 - Math.min(Math.abs(offset), 3) / 3);
@@ -168,6 +177,7 @@ async function init() {
   movies.forEach((m, i) => {
     const div = document.createElement("div");
     div.className = "poster";
+    div.hidden = true;
     div.innerHTML = `
       <div class="box">
         <div class="front">
@@ -185,8 +195,13 @@ async function init() {
       </div>
     `;
     const image = div.querySelector(".front img");
-    image.src = m.posterUrl;
     image.alt = m.title;
+    image.decoding = "async";
+    image.addEventListener("error", () => {
+      if (image.getAttribute("src") && image.getAttribute("src") !== FALLBACK_IMG) {
+        image.src = FALLBACK_IMG;
+      }
+    });
     div.querySelector(".details h3").textContent = m.title;
     div.querySelector(".details p").textContent = m.runtime || "Duration not available.";
 
@@ -196,7 +211,7 @@ async function init() {
     caption.textContent = year ? `${m.title} (${year})` : m.title;
     div.appendChild(caption);
     flow.appendChild(div);
-    posters.push({ ...m, element: div });
+    posters.push({ ...m, element: div, image });
 
     div.addEventListener("click", () => {
       posters.forEach(p => p.element.classList.remove("flipped"));
