@@ -9,7 +9,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   schedule:
-    - cron: "23 13 * * *"
+    - cron: "3-58/5 * * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -45,23 +45,31 @@ jobs:
             exit 0
           fi
           python3 .github/sync_trakt.py
-      - name: Save newly imported movies
+      - name: Check for newly imported movies
+        id: imports
         run: |
           git add -- Cinefilos/assets/trakt-movies.js
           if [ -d Cinefilos/posters/trakt ]; then
             git add -- Cinefilos/posters/trakt
           fi
           if ! git diff --cached --quiet; then
-            git -c user.name=github-actions -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m "Sync Cinefilos movies from Trakt"
-            git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Setup Pages
+        if: github.event_name != 'schedule' || steps.imports.outputs.changed == 'true'
         uses: actions/configure-pages@v5
       - name: Upload artifact
+        if: github.event_name != 'schedule' || steps.imports.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
           path: './Cinefilos'
       - name: Deploy to GitHub Pages
+        if: github.event_name != 'schedule' || steps.imports.outputs.changed == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Save newly imported movies
+        if: steps.imports.outputs.changed == 'true'
+        run: |
+          git -c user.name=github-actions -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m "Sync Cinefilos movies from Trakt"
+          git push origin HEAD:main
