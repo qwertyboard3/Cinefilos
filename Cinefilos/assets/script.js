@@ -96,12 +96,12 @@ const fetchPoster = async (id) => {
 };
 // 🔄 Update Coverflow Display
 function updateCoverflow(addHistory = false) {
-  const spacing = 150, maxTilt = 45, maxZ = 150, minScale = 0.7, scaleStep = 0.15;
+  const spacing = 165, maxTilt = 45, maxZ = 150, minScale = 0.7, scaleStep = 0.15;
 
   posters.forEach((p, i) => {
     const offset = i - currentIdx;
     const x = offset * spacing;
-    const rot = -offset * maxTilt;
+    const rot = -Math.sign(offset) * maxTilt;
     const z = offset === 0 ? maxZ : maxZ * (1 - Math.min(Math.abs(offset), 3) / 3);
     const scale = Math.max(minScale, 1 - Math.abs(offset) * scaleStep);
     const zidx = offset === 0 ? 3000 : 1000 - Math.abs(offset);
@@ -121,10 +121,15 @@ function updateCoverflow(addHistory = false) {
       if (!exists) {
         const li = document.createElement("li");
         li.innerHTML = `
-          <div style="font-weight:bold;">${p.title}</div>
-          <div style="font-size: 14px; opacity: 0.8;">${p.runtime}</div>
-          <img src="${p.posterUrl}" alt="${p.title}">
+          <div style="font-weight:bold;"></div>
+          <div style="font-size: 14px; opacity: 0.8;"></div>
+          <img>
         `;
+        const [title, runtime, image] = li.children;
+        title.textContent = p.title;
+        runtime.textContent = p.runtime;
+        image.src = p.posterUrl;
+        image.alt = p.title;
         historyList.prepend(li);
       }
     }
@@ -134,29 +139,53 @@ function updateCoverflow(addHistory = false) {
 
 // 🚀 Initialize Posters with Shuffle
 async function init() {
+  const imported = new Map(
+    (typeof traktMovies === "undefined" ? [] : traktMovies).map(movie => [movie.id, movie])
+  );
+  const catalog = new Map(entries.map(entry => [entry.imdbID, { id: entry.imdbID }]));
+  for (const movie of imported.values()) {
+    if (!catalog.has(movie.id)) catalog.set(movie.id, movie);
+  }
+  const movies = await Promise.all(
+    [...catalog.values()].map(movie => movie.posterUrl ? movie : fetchPoster(movie.id))
+  );
+
   // Shuffle Mode
-  for (let i = entries.length - 1; i > 0; i--) {
+  for (let i = movies.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [entries[i], entries[j]] = [entries[j], entries[i]];
+    [movies[i], movies[j]] = [movies[j], movies[i]];
   }
 
-  const movies = await Promise.all(entries.map(e => fetchPoster(e.imdbID)));
   movies.forEach((m, i) => {
     const div = document.createElement("div");
     div.className = "poster";
     div.innerHTML = `
       <div class="box">
         <div class="front">
-          <img src="${m.posterUrl}" alt="${m.title}">
+          <img>
         </div>
+        <div class="spine spine-left"></div>
+        <div class="spine spine-right"></div>
+        <div class="case-top"></div>
         <div class="back">
           <div class="details">
-            <h3>${m.title}</h3>
-            <p>${m.runtime || "Duration not available."}</p>
+            <h3></h3>
+            <p></p>
           </div>
         </div>
       </div>
     `;
+    const image = div.querySelector(".front img");
+    image.src = m.posterUrl;
+    image.alt = m.title;
+    div.querySelector(".details h3").textContent = m.title;
+    div.querySelector(".details p").textContent = m.runtime || "Duration not available.";
+
+    const caption = document.createElement("span");
+    caption.className = "movie-caption";
+    const year = m.year || movieYears[m.id];
+    caption.textContent = year ? `${m.title} (${year})` : m.title;
+    div.appendChild(caption);
     flow.appendChild(div);
     posters.push({ ...m, element: div });
 

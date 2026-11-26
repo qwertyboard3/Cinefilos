@@ -1,6 +1,7 @@
 const movieTitles = {
   "tt0209144": "Memento",
   "tt0078446": "Up in Smoke",
+  "tt0119237": "Gummo",
   "tt0092172": "The Vindicator",
   "tt0078748": "Alien",
   "tt0048545": "Rebel Without a Cause",
@@ -14,7 +15,6 @@ const movieTitles = {
   "tt0105236": "Reservoir Dogs",
   "tt0115798": "The Cable Guy",
   "tt0072856": "Death Race 2000",
-  "tt0090728": "Big Trouble in Little China",
   "tt0057193": "It’s a Mad Mad Mad Mad World",
   "tt0085382": "Cujo",
   "tt0098084": "Pet Sematary",

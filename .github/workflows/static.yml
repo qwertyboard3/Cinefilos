@@ -8,10 +8,12 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  schedule:
+    - cron: "23 13 * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -24,6 +26,7 @@ concurrency:
 jobs:
   # Single deploy job since we're just deploying
   deploy:
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -31,6 +34,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Sync Trakt movie list
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
+        run: |
+          if [ -z "$TRAKT_CLIENT_ID" ] && [ "${{ github.event_name }}" = "push" ]; then
+            echo "::notice::Trakt sync will start after TRAKT_CLIENT_ID is configured."
+            exit 0
+          fi
+          python3 .github/sync_trakt.py
+      - name: Save newly imported movies
+        run: |
+          git add -- Cinefilos/assets/trakt-movies.js
+          if [ -d Cinefilos/posters/trakt ]; then
+            git add -- Cinefilos/posters/trakt
+          fi
+          if ! git diff --cached --quiet; then
+            git -c user.name=github-actions -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m "Sync Cinefilos movies from Trakt"
+            git push origin HEAD:main
+          fi
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

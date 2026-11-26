@@ -1,6 +1,7 @@
 const localFallback = {
   tt0209144: "posters/tt0209144.jpg", // Memento
   tt0078446: "posters/tt0078446.jpg", // Up in Smoke
+  tt0119237: "posters/tt0119237.jpg", // Gummo
   tt0092172: "posters/tt0092172.jpg", // The Vindicator
   tt0078748: "posters/tt0078748.jpg", // Alien
   tt0048545: "posters/tt0048545.jpg", // Rebel Without a Cause
@@ -14,7 +15,6 @@ const localFallback = {
   tt0105236: "posters/tt0105236.jpg", // Reservoir Dogs
   tt0115798: "posters/tt0115798.jpg", // The Cable Guy
   tt0072856: "posters/tt0072856.jpg", // Death Race 2000
-  tt0090728: "posters/tt0090728.jpg", // Big Trouble in Little China
   tt0057193: "posters/tt0057193.jpg", // It’s a Mad Mad Mad Mad World
   tt0085382: "posters/tt0085382.jpg", // Cujo
   tt0098084: "posters/tt0098084.jpg", // Pet Sematary
