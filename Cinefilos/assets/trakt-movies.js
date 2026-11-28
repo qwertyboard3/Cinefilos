@@ -27,6 +27,7 @@ const traktMovies = {
     "tt0120338",
     "tt0120689",
     "tt0128445",
+    "tt0133093",
     "tt0162346",
     "tt0208502",
     "tt0258470",
@@ -51,6 +52,13 @@ const traktMovies = {
       "year": 1997,
       "runtime": "194 min",
       "posterUrl": "posters/trakt/tt0120338.webp"
+    },
+    {
+      "id": "tt0133093",
+      "title": "The Matrix",
+      "year": 1999,
+      "runtime": "136 min",
+      "posterUrl": "posters/trakt/tt0133093.webp"
     },
     {
       "id": "tt0258470",
